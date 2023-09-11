@@ -8,21 +8,23 @@ Author: Spiros Dimou
 Auhtor URI:
 */
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/form-handler.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/helper-functions.php';
-
+// Ensure this file is being included by WordPress (and not accessed directly)
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 
 // Check for WooCommerce
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     die("WooCommerce not activated!");
 }
 
+require_once plugin_dir_path( __FILE__ ) . 'includes/form-handler.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/helper-functions.php';
+
 class CouponGroupPlugin
 {
-    function __construct()
-    {
-        add_action('admin_menu', array($this, 'main_menu'));
-        add_action('admin_menu', array($this, 'add_submenus'));
+    function __construct() {
+        add_action('admin_menu', array($this, 'menu'));
         add_action('admin_init', array($this, 'register_coupon_group_cpt'));  
         add_action('admin_enqueue_scripts', array($this, 'add_scripts'));
 
@@ -43,8 +45,7 @@ class CouponGroupPlugin
         wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
     }
 
-    function register_coupon_group_cpt()
-    {
+    function register_coupon_group_cpt() {
         $args = array(
             'public' => true,
             'label'  => 'Coupon Groups',
@@ -53,38 +54,18 @@ class CouponGroupPlugin
         register_post_type('coupon_group', $args);
     }
 
-    function main_menu()
-    {
-        $icon_url = plugins_url('/assets/images/baseline_local_offer_white_18dp.png', __FILE__);
-
+    function menu() {
         add_menu_page(
             'Overview',         // Page title
             'Coupon Group',     // Menu title
             'manage_options',   // Capability
             'coupon-group',     // Menu slug
             array($this, 'overview_page'), // Callback function
-            $icon_url,
+            'data:image/svg+xml;base64, PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgZmlsbD0iI2ZmZmZmZiI+PHBhdGggZD0iTTAgMGgyNHYyNEgwVjB6IiBmaWxsPSJub25lIi8+PHBhdGggZD0ibTIxLjQxIDExLjU4LTktOUMxMi4wNSAyLjIyIDExLjU1IDIgMTEgMkg0Yy0xLjEgMC0yIC45LTIgMnY3YzAgLjU1LjIyIDEuMDUuNTkgMS40Mmw5IDljLjM2LjM2Ljg2LjU4IDEuNDEuNThzMS4wNS0uMjIgMS40MS0uNTlsNy03Yy4zNy0uMzYuNTktLjg2LjU5LTEuNDFzLS4yMy0xLjA2LS41OS0xLjQyek0xMyAyMC4wMSA0IDExVjRoN3YtLjAxbDkgOS03IDcuMDJ6Ii8+PGNpcmNsZSBjeD0iNi41IiBjeT0iNi41IiByPSIxLjUiLz48L3N2Zz4=',
             55.5                          // Position in menu
         );
-    }
 
-    // Render admin page
-    function overview_page()
-    { 
-        ?>
-            <div class="wrap">
-                <h1>Coupon Group</h1>
-                <h4>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h4>
-                <?php
-                    'display_coupon_groups'();
-                ?>
-            </div>
-        <?php
-    }
-
-    
-    function add_submenus()
-    {
+        // Submenus
         // This submenu change the title of the item that refers to the main page
         add_submenu_page(
             'coupon-group',
@@ -115,7 +96,20 @@ class CouponGroupPlugin
             array($this, 'new_coupon_page')  // The function to be called to output the content for this page.
         );
     }
-
+    
+  
+    // Render admin page
+    function overview_page() { 
+        ?>
+            <div class="wrap">
+                <h1>Coupon Group</h1>
+                <h4>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h4>
+                <?php
+                    'display_coupon_groups'();
+                ?>
+            </div>
+        <?php
+    }
  
     function new_group_page() {
         // Fetch WooCommerce coupons
@@ -133,17 +127,19 @@ class CouponGroupPlugin
         delete_transient('new_group_form_data');
         
         // Display error message for form validation
-        if ($error = get_transient('expiry_date_error')) {
-            delete_transient('expiry_date_error');
-            echo "<div class='notice notice-error is-dismissible'><p>{$error}</p></div>";            
-        }
-        
+        if ($error = get_transient('new_group_form_error_msg')) {
+            delete_transient('new_group_form_error-msg');
+            echo "<div class='error is-dismissible'><p>{$error}</p></div>";            
+        }        
     
         ?>
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
-                <h1>Create Coupon Group</h1>                
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <h1>Create Coupon Group</h1>
+                <?php if ($_POST["create_coupon_group_submitted"] == 'true') create_coupon_group_handler()  ?>                
+                <form method="POST">
+                    <input type="hidden" name="create_coupon_group_submitted" value="true">
+                    <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>   
                     <!-- Group Name -->
                     <div class="admin-cg-form-field">
                         <label for="group_name">Group Name</label>
@@ -192,12 +188,10 @@ class CouponGroupPlugin
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
-                    <input type="hidden" name="action" value="create_coupon_group_handler">
-                    <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>    
-                    <div class="submit">
-                        <input type="submit" value="Create Group" class="button button-primary">
-                    </div>
+                    </div>                     
+                    <?php 
+                        submit_button();
+                    ?>
                 </form>  
             </div>
         </div>

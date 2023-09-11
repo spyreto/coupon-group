@@ -9,11 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function create_coupon_group_handler() {
     // Check if form has been submitted
-    if(!isset($_POST['coupon_group_nonce']) || !wp_verify_nonce($_POST['coupon_group_nonce'], 'coupon_group_nonce_action')) {
+    if(!wp_verify_nonce($_POST['coupon_group_nonce'], 'coupon_group_nonce_action')) {
         wp_die('Nonce verification failed.');
     }
     try {
-
         // Save form data for prepopulated fields
         $form_data = array(
             'group_name' => sanitize_text_field( $_POST['group_name']),
@@ -51,14 +50,12 @@ function create_coupon_group_handler() {
         // Handle error, e.g., display an error message to the admin.
         }   
     } catch (Exception $e) {
-        set_transient('expiry_date_error', $e->getMessage(), 45);
+        set_transient('new_group_form_error_msg', $e->getMessage(), 45);
         set_transient('new_group_form_data', $form_data, 60);  
 
          // Redirect back to form page
          wp_redirect(admin_url('admin.php?page=new_group'));
-    } finally {
-        exit; 
-    }  
+    } 
 }
 
 /**
@@ -95,23 +92,33 @@ function is_valid_expiry_date($date) {
     return $date;
 }
 
-/**
- * Convert date from 'yy-mm-dd' to 'dd-mm-yy'.
- *
- * @param string $date Date in 'yy-mm-dd' format.
- * @return string Date in 'dd-mm-yy' format or false if provided date is invalid.
- */
-function convert_date_format($date) {
-    // Convert date string to timestamp
-    $date_timestamp = strtotime($date);
 
-    // Check if it's a valid timestamp
-    if (!$date_timestamp) {       
-        return false;
+function has_users($date) {
+    if (empty($date)) {
+        throw new Exception("Please enter a valid future expiry date.");
+    }
+    // Check if the format is correct
+    if (!preg_match('/^\d{2}-\d{2}-\d{4}$/', $date)) {
+        throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
     }
 
-    // Convert and return in 'dd-mm-yy' format
-    return date('d-m-y', $date_timestamp);
+    // Convert date string to timestamp
+    $date_timestamp = strtotime($date);
+    
+    // Check if the date is a valid date (for example, not something like 00-00-00)
+    if (!$date_timestamp) {
+        throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
+    }
+
+    // Get today's date
+    $today = strtotime(date('y-m-d'));
+
+    // Check if the provided date is in the past
+    if ($date_timestamp <= $today) {
+        throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
+    }
+
+    return $date;
 }
 
 add_action('admin_post_create_coupon_group_handler', 'create_coupon_group_handler');
