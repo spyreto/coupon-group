@@ -14,8 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Check for WooCommerce
-if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-    die("WooCommerce not activated!");
+// if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+//     die("WooCommerce not activated!");
+// }
+
+/**
+ * Check if WooCommerce is activated
+ */
+if ( ! function_exists( 'is_woocommerce_activated' ) ) {
+	function is_woocommerce_activated() {
+		if ( class_exists( 'woocommerce' ) ) { return true; } else { return false; }
+	}
 }
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/form-handler.php';
@@ -25,24 +34,14 @@ class CouponGroupPlugin
 {
     function __construct() {
         add_action('admin_menu', array($this, 'menu'));
+        add_action('admin_menu', array($this,'custom_coupon_marketing_submenu'));
         add_action('admin_init', array($this, 'register_coupon_group_cpt'));  
         add_action('admin_enqueue_scripts', array($this, 'add_scripts'));
-
     }
 
     function add_scripts() {
         //Custom style
         wp_enqueue_style('coupon-group', plugins_url( 'assets/css/coupon-group.css', __FILE__ ) );
-        wp_enqueue_script('create-coupon-group', plugins_url( 'assets/js/create-coupon-group.js', __FILE__ ) );
-        // Enqueue the jQuery UI style for the datepicker
-        wp_enqueue_style('jquery-ui', '//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
-
-        // Enqueue WordPress built-in script for datepicker
-        wp_enqueue_script('jquery-ui-datepicker');
-
-        // Enqueue Select2 for better select boxes
-        wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
-        wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
     }
 
     function register_coupon_group_cpt() {
@@ -54,7 +53,47 @@ class CouponGroupPlugin
         register_post_type('coupon_group', $args);
     }
 
-    function menu() {
+    //Marketing submenu
+    function custom_coupon_marketing_submenu() {
+        add_submenu_page(
+            'woocommerce-marketing',           // Parent slug
+            'Add Custom Coupon',               // Page title
+            'Custom Coupon',                     // Menu title
+            'manage_woocommerce',             // Capability
+            'add_custom_coupon',                // Menu slug
+            array($this, 'new_custom_coupon_page')  // Callback function
+        );
+    }
+    
+    
+    function new_custom_coupon_page() {// Handle saving logic here if form is submitted.
+        // ...
+    
+        // Display form.
+        ?>
+        <div class="admin-cg-wrap">
+            <div class="admin-cg-main">
+                <h1>Add Custom Coupon Type</h1>
+                <form method="post">
+                    <div class="admin-cg-form-field">
+                        <label for="custom_coupon_title">Coupon Title</label>
+                        <input type="text" name="custom_coupon_title" value="<?php echo esc_attr(get_option('custom_coupon_title', '')); ?>">                    </div>
+                    <div class="admin-cg-form-field">
+                        <label for="custom_coupon_description">Description</label>
+                        <textarea name="custom_coupon_description" rows="5" cols="40"><?php echo esc_textarea(get_option('custom_coupon_description', '')); ?></textarea>
+                    </div>                
+                    <?php wp_nonce_field('save_custom_coupon_type'); ?>
+                    <?php 
+                        submit_button();
+                    ?>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+    
+
+    function menu() {        
         add_menu_page(
             'Overview',         // Page title
             'Coupon Group',     // Menu title
@@ -77,7 +116,7 @@ class CouponGroupPlugin
         );
 
         // New coupon group page
-        add_submenu_page(
+        $new_coupon_hook = add_submenu_page(
             'coupon-group',                    // The slug name for the parent menu (to which you are adding this submenu).
             'New Group',          // The text to be displayed in the title tags of the page when the menu is selected.
             'New Group',               // The text to be used for the menu.
@@ -95,8 +134,22 @@ class CouponGroupPlugin
             'new_coupon',        // The slug name to refer to this menu by.
             array($this, 'new_coupon_page')  // The function to be called to output the content for this page.
         );
+        add_action("load-{$new_coupon_hook }", array($this, 'new_group_page_assets'));
     }
     
+    function new_coupon_page_assets(){
+        // Enqueue the jQuery UI style for the datepicker
+        wp_enqueue_style('jquery-ui', '//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
+
+        // Enqueue WordPress built-in script for datepicker
+        wp_enqueue_script('jquery-ui-datepicker');
+
+        // Enqueue Select2 for better select boxes
+        wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
+        wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
+        
+        wp_enqueue_script('create-coupon-group', plugins_url( 'assets/js/create-coupon-group.js', __FILE__ ) );
+    }
   
     // Render admin page
     function overview_page() { 
@@ -151,7 +204,7 @@ class CouponGroupPlugin
                         <label for="wc_coupons">WooCommerce Coupons</label>
                         <select name="wc_coupons[]" id="wc_coupons" multiple>
                             <?php foreach($coupons as $index =>$coupon): ?>
-                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
+                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>
                                 <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
                             </option>
                                 <?php endforeach; ?>
@@ -164,7 +217,7 @@ class CouponGroupPlugin
                         <label for="custom_coupons">Custom Coupons</label>
                         <select name="custom_coupons[]" id="custom_coupons" multiple>
                             <?php foreach($coupons as $coupon): ?>
-                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['custom_coupons']) ? 'selected' : ''; ?>>
+                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['custom_coupons']) ? 'selected' : ''; ?>
                                     <?php echo $coupon->post_title; ?>
                                 </option>
                             <?php endforeach; ?>
@@ -183,7 +236,7 @@ class CouponGroupPlugin
                         <label for="customers">Customers</label>
                         <select name="customers[]" id="customers" multiple>
                             <?php foreach($users as $user): ?>
-                                <option value="<?php echo $user->ID; ?>" <?php echo in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>>
+                                <option value="<?php echo $user->ID; ?>" <?php echo in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>
                                     <?php echo $user->user_email; ?>
                                 </option>
                             <?php endforeach; ?>
@@ -197,6 +250,8 @@ class CouponGroupPlugin
         </div>
         <?php
     } 
+
+    
 }
 
 $coupon_group_plugin = new CouponGroupPlugin();

@@ -1,5 +1,6 @@
-// Helper functions
 <?php
+// Helper functions
+
 // Ensure this file is being included by WordPress (and not accessed directly)
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
