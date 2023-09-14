@@ -34,9 +34,11 @@ class CouponGroupPlugin
 {
     function __construct() {
         add_action('admin_menu', array($this, 'menu'));
-        add_action('admin_menu', array($this,'custom_coupon_marketing_submenu'));
         add_action('admin_init', array($this, 'register_coupon_group_cpt'));  
         add_action('admin_enqueue_scripts', array($this, 'add_scripts'));
+
+        add_action('woocommerce_coupon_options', array($this, 'display_custom_coupon_option_fields'), 10, 2);
+        add_action('save_post',  array($this,'save_custom_coupon_option_fields'), 10, 3);        
     }
 
     function add_scripts() {
@@ -52,47 +54,101 @@ class CouponGroupPlugin
         );
         register_post_type('coupon_group', $args);
     }
-
-    //Marketing submenu
-    function custom_coupon_marketing_submenu() {
-        add_submenu_page(
-            'woocommerce-marketing',           // Parent slug
-            'Add Custom Coupon',               // Page title
-            'Custom Coupon',                     // Menu title
-            'manage_woocommerce',             // Capability
-            'add_custom_coupon',                // Menu slug
-            array($this, 'new_custom_coupon_page')  // Callback function
-        );
-    }
     
     
-    function new_custom_coupon_page() {// Handle saving logic here if form is submitted.
-        // ...
-    
+    function create_coupon_option_page() {
+        $form_data = get_transient('new_coupon_option_form_data');
+        delete_transient('new_coupon_option_form_data');
+        
+        // Display error message for form validation
+        if ($error = get_transient('new_coupon_option_form_error_msg')) {
+            delete_transient('new_coupon_option_form_error-msg');
+            echo "<div class='error is-dismissible'><p>{$error}</p></div>";            
+        }
         // Display form.
         ?>
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
-                <h1>Add Custom Coupon Type</h1>
-                <form method="post">
+                <h1>Create Coupon Option</h1>
+                <form method="POST" action="<?php echo esc_url( admin_url( 'admin-post.php' ) );?>">                      
                     <div class="admin-cg-form-field">
                         <label for="custom_coupon_title">Coupon Title</label>
-                        <input type="text" name="custom_coupon_title" value="<?php echo esc_attr(get_option('custom_coupon_title', '')); ?>">                    </div>
+                        <input 
+                            type="text" 
+                            name="custom_coupon_title" 
+                            id="custom_coupon_title" 
+                            value="<?php echo esc_attr($form_data['custom_coupon_title'] ?? ''); ?>" 
+                            required>                  
+                    </div>
                     <div class="admin-cg-form-field">
-                        <label for="custom_coupon_description">Description</label>
-                        <textarea name="custom_coupon_description" rows="5" cols="40"><?php echo esc_textarea(get_option('custom_coupon_description', '')); ?></textarea>
-                    </div>                
-                    <?php wp_nonce_field('save_custom_coupon_type'); ?>
+                        <label for="custom_coupon_description">Description (Optional)</label>
+                        <textarea 
+                            name="custom_coupon_description" 
+                            id="custom_coupon_description" 
+                            rows="5" cols="40"><?php echo esc_attr($form_data['custom_coupon_description'] ?? '');?></textarea>
+                    </div>
+                    <input type="hidden" name="action" value="new_coupon_option_form_action">                
                     <?php 
-                        submit_button();
+                        wp_nonce_field('new_coupon_option_action', 'new_coupon_option_nonce'); 
+                        submit_button("Save Option");
                     ?>
                 </form>
             </div>
         </div>
         <?php
     }
-    
 
+    /**
+     * Displays the custom coupon options in Add New Coupon page.
+     * 
+     */
+    function display_custom_coupon_option_fields($coupon_id, $coupon) {
+        $custom_coupon_options = get_option('custom_coupon_options');
+               
+        foreach ($custom_coupon_options as $index => $custom_option) {
+            $checkbox_id = 'enable_custom_coupon_option_' . $index;
+            $is_checked = get_post_meta($coupon_id, $custom_option['title'], true) === 'yes';
+           
+            woocommerce_wp_checkbox(array(
+                'id'            => $checkbox_id,
+                'label'         => $custom_option['title'],
+                'description'   => $custom_option['description'],
+                'value'         => $is_checked ? 'yes' : 'no',
+            ));
+        }        
+    }
+
+    /**
+     * Saves the custom coupon options when a wc coupon is created.
+     * 
+     */
+    function save_custom_coupon_option_fields($post_id, $post, $update) {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (get_post_type($post_id) == 'shop_coupon') {
+            $custom_coupons = get_option('custom_coupon_options', array());
+            foreach ($custom_coupons as $index => $custom_coupon) {
+                $checkbox_id = 'enable_custom_coupon_option_' . $index;
+        
+                // Check if the checkbox for this custom coupon was checked
+                if (isset($_POST[$checkbox_id]) && $_POST[$checkbox_id] === 'yes') {
+                    // Save it into the coupon's metadata
+                    update_post_meta($post_id, $custom_coupon['title'], 'yes');
+                } else {
+                    // Otherwise, delete the metadata (or set it to 'no', depending on your preference)
+                    update_post_meta($post_id, $custom_coupon['title'], 'no');
+                }
+            }
+        }
+        return;
+    }
+        
+    /**
+     * Plugin Menu
+     * 
+     */
     function menu() {        
         add_menu_page(
             'Overview',         // Page title
@@ -125,19 +181,30 @@ class CouponGroupPlugin
             array($this, 'new_group_page')  // The function to be called to output the content for this page.
         );
 
-        // New coupon page
+        add_action("load-{$new_coupon_hook}", array($this, 'new_group_page_assets'));
+        
+        // // New coupon page
+        // add_submenu_page(
+        //     'coupon-group',                    // The slug name for the parent menu (to which you are adding this submenu).
+        //     'New Coupon',          // The text to be displayed in the title tags of the page when the menu is selected.
+        //     'New Coupon',               // The text to be used for the menu.
+        //     'manage_options',                // The capability required for this menu to be displayed to the user.
+        //     'new_coupon',        // The slug name to refer to this menu by.
+        //     array($this, 'new_coupon_page')  // The function to be called to output the content for this page.
+        // );
+        
+        //Create coupon option submenu
         add_submenu_page(
-            'coupon-group',                    // The slug name for the parent menu (to which you are adding this submenu).
-            'New Coupon',          // The text to be displayed in the title tags of the page when the menu is selected.
-            'New Coupon',               // The text to be used for the menu.
-            'manage_options',                // The capability required for this menu to be displayed to the user.
-            'new_coupon',        // The slug name to refer to this menu by.
-            array($this, 'new_coupon_page')  // The function to be called to output the content for this page.
+            'coupon-group',           // Parent slug
+            'New Coupon Option',               // Page title
+            'New Coupon Option',                     // Menu title
+            'manage_woocommerce',             // Capability
+            'create_coupon_coupon',                // Menu slug
+            array($this, 'create_coupon_option_page')  // Callback function
         );
-        add_action("load-{$new_coupon_hook }", array($this, 'new_group_page_assets'));
     }
     
-    function new_coupon_page_assets(){
+    function new_group_page_assets(){
         // Enqueue the jQuery UI style for the datepicker
         wp_enqueue_style('jquery-ui', '//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
 
@@ -189,10 +256,8 @@ class CouponGroupPlugin
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
                 <h1>Create Coupon Group</h1>
-                <?php if ($_POST["create_coupon_group_submitted"] == 'true') create_coupon_group_handler()  ?>                
-                <form method="POST">
-                    <input type="hidden" name="create_coupon_group_submitted" value="true">
-                    <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>   
+                <?php if (isset($_POST["create_coupon_group_submitted"]) && $_POST["create_coupon_group_submitted"] == 'true') create_coupon_group_handler()  ?>                
+                <form method="POST">                       
                     <!-- Group Name -->
                     <div class="admin-cg-form-field">
                         <label for="group_name">Group Name</label>
@@ -204,27 +269,13 @@ class CouponGroupPlugin
                         <label for="wc_coupons">WooCommerce Coupons</label>
                         <select name="wc_coupons[]" id="wc_coupons" multiple>
                             <?php foreach($coupons as $index =>$coupon): ?>
-                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>
-                                <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
-                            </option>
-                                <?php endforeach; ?>
-                        </select>
-                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Go to WooCommerce Coupons</a>
-                    </div>
-
-                    <!-- Custom Coupons -->
-                    <div class="admin-cg-form-field">
-                        <label for="custom_coupons">Custom Coupons</label>
-                        <select name="custom_coupons[]" id="custom_coupons" multiple>
-                            <?php foreach($coupons as $coupon): ?>
-                                <option value="<?php echo $coupon->ID; ?>" <?php echo in_array($coupon->ID, $form_data['custom_coupons']) ? 'selected' : ''; ?>
-                                    <?php echo $coupon->post_title; ?>
+                                <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
+                                    <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Create a Custom Coupons</a>
-                    </div>
-                        
+                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Go to WooCommerce Coupons</a>
+                    </div>                        
                     <!-- Expiry Date -->
                     <div class="admin-cg-form-field ">
                         <label for="expiry_date">Expiry Date</label>
@@ -236,12 +287,14 @@ class CouponGroupPlugin
                         <label for="customers">Customers</label>
                         <select name="customers[]" id="customers" multiple>
                             <?php foreach($users as $user): ?>
-                                <option value="<?php echo $user->ID; ?>" <?php echo in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>
+                                <option value="<?php echo $user->ID; ?>" <?php echo isset($form_data['customers']) && in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>>
                                     <?php echo $user->user_email; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                    </div>                     
+                    </div>
+                    <input type="hidden" name="create_coupon_group_submitted" value="true">
+                    <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>                     
                     <?php 
                         submit_button();
                     ?>
@@ -249,9 +302,7 @@ class CouponGroupPlugin
             </div>
         </div>
         <?php
-    } 
-
-    
+    }
 }
 
 $coupon_group_plugin = new CouponGroupPlugin();
