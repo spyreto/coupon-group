@@ -32,13 +32,13 @@ function display_coupon_groups() {
 
     // Check if we have groups
     if ($query->have_posts()) : ?>
-
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
                     <th>Expire</th>
+                    <th>Is Active</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -47,14 +47,15 @@ function display_coupon_groups() {
                     <?php 
                     // Using get_the_ID()
                     $expiry = get_post_meta(get_the_ID(), '_expiry_date', true);
-
+                    $is_active = get_post_meta(get_the_ID(), '_is_active', true);
                     ?>
                     <tr>
                         <td><?php the_ID(); ?></td>
                         <td><?php the_title();?></td>
                         <td><?php echo esc_html($expiry); ?></td>
-                        <td>
-                            <a href="<?php echo get_edit_post_link(); ?>">Edit</a>
+                        <td><?php echo esc_html($expiry); ?></td>
+                        <td>                                                 
+                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . get_the_ID()) ?>">Edit</a>
                             <a href="<?php echo get_edit_post_link(); ?>">Delete</a>
                         </td> <!-- Link to edit the group -->
                     </tr>

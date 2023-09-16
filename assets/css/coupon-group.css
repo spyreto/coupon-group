@@ -70,11 +70,6 @@ Background color: #f8f9fa
 
 .admin-cg-form-field input {
   font-size: 1.4em;
-  max-width: 24em;
-}
-
-.admin-cg-form-field select {
-  font-size: 1.4em;
 }
 
 .admin-cg-form-field a {
@@ -86,4 +81,16 @@ Background color: #f8f9fa
   font-size: 1.2em;
   color: #1d2327;
   text-align: center;
+}
+
+.sm-form-field {
+  max-width: 11em;
+}
+
+.m-form-field {
+  max-width: 14em;
+}
+
+.m-form-field {
+  max-width: 20em;
 }
