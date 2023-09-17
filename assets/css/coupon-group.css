@@ -84,13 +84,13 @@ Background color: #f8f9fa
 }
 
 .sm-form-field {
-  max-width: 11em;
+  max-width: 15em;
 }
 
 .m-form-field {
-  max-width: 14em;
+  max-width: 22em;
 }
 
-.m-form-field {
-  max-width: 20em;
+.l-form-field {
+  max-width: 26em;
 }

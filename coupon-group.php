@@ -110,104 +110,44 @@ class CouponGroupPlugin
             'create_coupon_coupon',                // Menu slug
             array($this, 'create_coupon_option_page')  // Callback function
         );
-    }
-
-     /**
-     * Edit group
-     * 
-     */
-    function edit_coupon_group() {
-        $group_id = isset($_GET['group_id']) ? intval($_GET['group_id']) : 0;
-        
-        // Fetch existing data
-        $group_name = get_the_title($group_id);
-        $wc_coupons = get_post_meta($group_id, '_wc_coupons', true);
-        $expiry_date = get_post_meta($group_id, '_expiry_date', true);
-        $customers = get_post_meta($group_id, '_associated_coupons', true); 
-        
-        // Fetch WooCommerce coupons
-        $args = array(
-            'post_type' => 'shop_coupon',
-            'posts_per_page' => -1
-        );
-        $coupons = get_posts($args);
-        
-        // Retrieve stored form data from transient
-        $form_data = get_transient('edit_group_form_data');
-        delete_transient('edit_group_form_data');
-        
-        // Display error message for form validation
-        if ($error = get_transient('edit_group_form_error_msg')) {
-            delete_transient('edit_group_form_error-msg');
-            echo "<div class='error is-dismissible'><p>{$error}</p></div>";            
-        }        
-    
-        ?>
-        <div class="admin-cg-wrap">
-            <div class="admin-cg-main">
-                <h1>Edit Coupon Group</h1>
-                <?php if (isset($_POST["edit_coupon_group_submitted"]) && $_POST["edit_coupon_group_submitted"] == 'true') edit_coupon_group_handler()  ?>                
-                <form method="POST">                       
-                    <!-- Group Name -->
-                    <div class="admin-cg-form-field">
-                        <label for="group_name">Group Name</label>
-                        <input type="text" class="sm-form-field" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? $group_name); ?>">
-                    </div>
-                    
-                    <!-- WooCommerce Coupons -->
-                    <div class="admin-cg-form-field">
-                        <label for="wc_coupons">WooCommerce Coupons</label>
-                        <select name="wc_coupons[]" id="wc_coupons" multiple>
-                            <?php foreach($coupons as $index =>$coupon): ?>
-                                <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
-                                    <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Go to WooCommerce Coupons</a>
-                    </div>                        
-                    <!-- Expiry Date -->
-                    <div class="admin-cg-form-field ">
-                        <label for="expiry_date">Expiry Date</label>
-                        <input type="text" class="sm-form-field" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" 
-                            value="<?php echo $expiry_date ?>">
-                    </div>
-                    
-                    <!-- Customers -->
-                    <div class="admin-cg-form-field ">
-                        <label for="customers">Customers</label>
-                        <select name="customers[]" id="customers" multiple>
-                            <?php foreach($users as $user): ?>
-                                <option value="<?php echo $user->ID; ?>" <?php echo isset($form_data['customers']) && in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>>
-                                    <?php echo $user->user_email; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <input type="hidden" name="create_coupon_group_submitted" value="true">
-                    <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>                     
-                    <?php 
-                        submit_button("Upadate");
-                    ?>
-                </form>  
-            </div>
-        </div>
-        <?php
-    }
-    
+    }    
         
     /**
      * Render the coupon groups overview page
      * 
      */
-    function overview_page() { 
+    function overview_page() {  
 
         ?>
             <div class="wrap">
+                <?php 
+                if(isset($_GET['group_deleted']) == 'true') {
+                    ?> 
+                        <div class="updated notice is-dismissible">
+                            <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been deleted.</p>
+                        </div>
+                    <?php
+                }
+                elseif(isset($_GET['group_updated']) == 'true') {
+                    ?> 
+                        <div class="updated notice-success is-dismissible">
+                            <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been updated successfully.</p>
+                        </div>
+                    <?php
+                }
+                elseif(isset($_GET['group_created']) == 'true') {
+                    ?> 
+                        <div class="updated notice is-dismissible">
+                            <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been created successfully.</p>
+                        </div>
+                    <?php
+                }
+                ?>
                 <h1>Coupon Group</h1>
                 <h4>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h4>
                 <?php
                     'display_coupon_groups'();
+                    'display_coupon_options'();
                 ?>
             </div>
         <?php
@@ -219,14 +159,13 @@ class CouponGroupPlugin
      */
     function create_or_edit_group_page() {
         $group_id = isset($_GET['group_id']) ? intval($_GET['group_id']) : 0;
-
         $old_coupon_group = new stdClass();
 
         if ($group_id){
             // Fetch existing data
             $old_coupon_group->name = get_the_title($group_id);
             $old_coupon_group->wc_coupons = get_post_meta($group_id, '_wc_coupons', true);
-            $old_coupon_group->expiry_date = get_post_meta($group_id, '_expiry_date', true);
+            $old_coupon_group->expiry_date = get_post_meta($group_id, '_expiry_date',true); 
             $old_coupon_group->customers = get_post_meta($group_id, '_customers', true); 
             $old_coupon_group->is_active = get_post_meta($group_id, '_is_active', true); 
         }
@@ -260,9 +199,9 @@ class CouponGroupPlugin
                         <?php if (isset($_POST["create_coupon_group_submitted"]) && $_POST["create_coupon_group_submitted"] == 'true') create_coupon_group_handler()  ?>                
                         <form method="POST">                       
                             <!-- Group Name -->
-                            <div class="admin-cg-form-field ">
+                            <div class="admin-cg-form-field sm-form-field">
                                 <label for="group_name">Group Name</label>
-                                <input type="text" class="sm-form-field" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ($old_coupon_group->name  ?? '')); ?>">
+                                <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ($old_coupon_group->name  ?? '')); ?>">
                             </div>
                             
                             <!-- WooCommerce Coupons -->
@@ -270,42 +209,39 @@ class CouponGroupPlugin
                                 <label for="wc_coupons">WooCommerce Coupons</label>
                                 <select name="wc_coupons[]" id="wc_coupons" multiple>
                                     <?php
-                                        if (empty($form_data['wc_coupons'])) {
+                                        if (empty($form_data['wc_coupons'])) {                                           
                                             foreach($coupons as $index =>$coupon){
                                                 ?>
-                                                    <option value="<?php echo $coupon->ID; ?>" <?php echo isset($old_coupon_group->wc_coupons[$index]) && in_array($coupon->ID, $old_coupon_group->wc_coupons) ? 'selected' : ''; ?>>
-                                                    <?php echo esc_attr($old_coupon_group->wc_coupons[$index]->post_title ?? $coupon->post_title); ?>
+                                                    <option value="<?php echo $coupon->ID; ?>" <?php echo isset($old_coupon_group->wc_coupons) && in_array($coupon->ID, $old_coupon_group->wc_coupons) ? 'selected' : ''; ?>>
+                                                    <?php echo esc_attr($coupon->post_title); ?>
                                                     </option>
                                                 <?php
                                             }
                                         } else {
-                                            foreach($coupons as $index =>$coupon){
+                                            foreach($coupons as $coupon){
                                                 ?>
-                                                    <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
-                                                    <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
+                                                    <option value="<?php echo $coupon->ID; ?>" 
+                                                    <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; 
+                                                    ?>>
+                                                    <?php echo esc_attr($coupon->post_title); ?>
                                                     </option>
                                                 <?php
                                             }
                                         }
                                     ?>
                                     </select>                              
-                                    <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Go to WooCommerce Coupons</a>
+                                    <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>">Go to WooCommerce Coupons</a>
                                 </div>                        
-                                <!-- Expiry Date -->
-                                <div class="admin-cg-form-field ">
-                                    <label for="expiry_date">Expiry Date</label>
-                                    <input type="text" class="sm-form-field" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ($old_coupon_group->expiry_date  ?? '')); ?>">
-                                </div>
-                                
+                                                               
                                 <!-- Customers -->
-                                <div class="admin-cg-form-field ">
+                                <div class="admin-cg-form-field">
                                     <label for="customers">Customers</label>
                                     <select name="customers[]" id="customers" multiple>
                                         <?php
                                             if (empty($form_data['wc_coupons'])) {
                                                 foreach($users as $user){
                                                     ?>
-                                                        <option value="<?php echo $user->ID; ?>" <?php echo isset($old_coupon_group->customers) && is_array($old_coupon_group->customers) && in_array($user->ID, $old_coupon_group->customers) ? 'selected' : ''; ?>>
+                                                        <option value="<?php echo $user->ID; ?>" <?php echo isset($old_coupon_group->customers) && in_array($user->ID, $old_coupon_group->customers) ? 'selected' : ''; ?>>
                                                         <?php echo $user->user_email; ?>
                                                         </option>
                                                     <?php
@@ -320,8 +256,16 @@ class CouponGroupPlugin
                                                 }
                                             }
                                         ?>
-                                        </select>
+                                    </select>
                                 </div>
+
+                                <!-- Expiry Date -->                                
+                                <div class="admin-cg-form-field sm-form-field">                                     
+                                    <label for="expiry_date">Expiry Date</label>
+                                    <input type="text" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr(isset($form_data['expiry_date'])? $form_data['expiry_date'] : ($old_coupon_group->expiry_date ?? '')); ?>">
+                                </div>
+
+                                <!-- Is Active -->
                                 <div class="admin-cg-form-field ">
                                     <input type="checkbox" name="is_active" value="1"
                                         <?php 
@@ -330,8 +274,9 @@ class CouponGroupPlugin
                                         ?> 
                                     />
                                 </div>
+
                                 <!-- Sents group id in order to update the group -->
-                                <input type="hidden" name="group_id" value="<?php echo ($group_id? $group_id : $form_data['group_id']) ?>">
+                                <input type="hidden" name="group_id" value="<?php echo $group_id ?>">
                                 <input type="hidden" name="create_coupon_group_submitted" value="true">
                                 <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>                     
                                 <?php 
@@ -349,9 +294,9 @@ class CouponGroupPlugin
                         <?php if (isset($_POST["create_coupon_group_submitted"]) && $_POST["create_coupon_group_submitted"] == 'true') create_coupon_group_handler()  ?>                
                         <form method="POST">                       
                             <!-- Group Name -->
-                            <div class="admin-cg-form-field">
+                            <div class="admin-cg-form-field sm-form-field">
                                 <label for="group_name">Group Name</label>
-                                <input type="text" class="sm-form-field" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ''); ?>">
+                                <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ''); ?>">
                             </div>
                             
                             <!-- WooCommerce Coupons -->
@@ -360,18 +305,13 @@ class CouponGroupPlugin
                                     <select name="wc_coupons[]" id="wc_coupons" multiple>
                                         <?php foreach($coupons as $index =>$coupon): ?>
                                             <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
-                                                <?php echo esc_attr($form_data['wc_coupons'][$index]->post_title ?? $coupon->post_title); ?>
+                                                <?php echo esc_attr($coupon->post_title); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>" target="_blank">Go to WooCommerce Coupons</a>
+                                    <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>">Go to WooCommerce Coupons</a>
                                 </div>                        
-                                <!-- Expiry Date -->
-                                <div class="admin-cg-form-field ">
-                                    <label for="expiry_date">Expiry Date</label>
-                                    <input type="text" class="sm-form-field" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ""); ?>">
-                                </div>
-
+                                
                                 <!-- Customers -->
                                 <div class="admin-cg-form-field ">
                                     <label for="customers">Customers</label>
@@ -383,6 +323,14 @@ class CouponGroupPlugin
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
+
+                                <!-- Expiry Date -->
+                                <div class="admin-cg-form-field sm-form-field">
+                                    <label for="expiry_date">Expiry Date</label>
+                                    <input type="text" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ""); ?>">
+                                </div>
+
+                                 <!-- Is Active -->
                                 <div class="admin-cg-form-field ">
                                     <input type="checkbox" name="is_active" value="1"
                                         <?php 
@@ -402,14 +350,6 @@ class CouponGroupPlugin
             <?php 
 
         }
-    }
-
-     /**
-     * Render the page for editingf a coupon group
-     * 
-     */
-    function edit_group_page($group_id) {
-        
     }
     
      /**

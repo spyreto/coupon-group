@@ -18,10 +18,6 @@ function get_readable_discount_type($type) {
 }
 
 function display_coupon_groups() {
-    if(isset($_GET['message']) && $_GET['message'] == 'success') {
-        echo '<div class="updated notice is-dismissible"><p>Form successfully submitted!</p></div>';
-    }
-
     // Fetch the coupon groups
     $args = array(
         'post_type' => 'coupon_group',
@@ -32,6 +28,7 @@ function display_coupon_groups() {
 
     // Check if we have groups
     if ($query->have_posts()) : ?>
+        <h3>Coupon Groups</h3>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
@@ -39,6 +36,7 @@ function display_coupon_groups() {
                     <th>Name</th>
                     <th>Expire</th>
                     <th>Is Active</th>
+                    <th>Total Users</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -46,18 +44,27 @@ function display_coupon_groups() {
                 <?php while ($query->have_posts()) : $query->the_post(); ?>
                     <?php 
                     // Using get_the_ID()
-                    $expiry = get_post_meta(get_the_ID(), '_expiry_date', true);
-                    $is_active = get_post_meta(get_the_ID(), '_is_active', true);
+                    $group_id = get_the_ID();
+                    $expiry = get_post_meta( $group_id, '_expiry_date', true);
+                    $is_active = get_post_meta( $group_id, '_is_active', true) == "1"? "Yes" : "No";
+                    $total_users = get_post_meta( $group_id, '_customers', true);
+
+                    // For group deletion
+                    $delete_nonce = wp_create_nonce('delete_coupon_group_' . $group_id);
+                    $delete_link = admin_url('admin.php?page=coupon-group&action=delete&group_id=' .  $group_id . '&_wpnonce=' . $delete_nonce);
+
                     ?>
                     <tr>
                         <td><?php the_ID(); ?></td>
                         <td><?php the_title();?></td>
                         <td><?php echo esc_html($expiry); ?></td>
-                        <td><?php echo esc_html($expiry); ?></td>
+                        <td><?php echo esc_html($is_active); ?></td>
+                        <td><?php echo is_array($total_users)? count($total_users) : "0"; ?></td>
                         <td>                                                 
-                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . get_the_ID()) ?>">Edit</a>
-                            <a href="<?php echo get_edit_post_link(); ?>">Delete</a>
-                        </td> <!-- Link to edit the group -->
+                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>">Edit</a>
+                            <span>|</span>
+                            <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo $group_id ?>">Delete</a>
+                        </td> 
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -72,6 +79,83 @@ function display_coupon_groups() {
     <?php
     endif;
 }
+
+/**
+ * Displays custom coupon options.
+ * 
+ */
+function display_coupon_options() {
+    $custom_coupon_options = get_option('custom_coupon_options', array());
+
+    ?>    
+     <h3>Custom Coupon Option</h3>
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <?php 
+                    if (!empty( $custom_coupon_options)) {
+                        foreach ($custom_coupon_options as $option) {
+                            // For group deletion
+                        $delete_nonce = wp_create_nonce('delete_coupon_group_' . '$group_id');
+                        $delete_link = admin_url('admin.php?page=coupon-group&action=delete&group_id=' .  '$group_id' . '&_wpnonce=' . $delete_nonce);
+                        
+                        ?>
+                        <tr>
+                            <td><?php echo esc_html($option['title'])?></td>
+                            <td><?php echo esc_html($option['description'])?></td>
+                            <td>                                                 
+                                <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . '$group_id') ?>">Edit</a>
+                                <span>|</span>
+                                <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo '$group_id' ?>">Delete</a>
+                            </td> 
+                            <td></td>
+                        </tr>
+                        <?php                        
+                        }
+                    } else {
+                        ?>
+                        <tr>
+                            <p>No custom coupon options found.</p>
+                        </tr>
+                        <?php
+                    }
+                ?>                    
+                
+            </tbody>
+        </table>
+
+    <?php
+}
+
+/**
+ * Ηandles the deletion of a coupon group.
+ * 
+ */
+function coupon_group_deletion_handler() {
+    if (isset($_GET['action']) && $_GET['action'] === 'delete') {
+        // Check if nonce is set and valid
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete_coupon_group_' . $_GET['group_id'])) {
+            die("Security check failed!");
+        }
+        
+        $group_id = $_GET['group_id'];
+        $group_name = get_the_title($group_id);
+        // Delete the coupon group
+        wp_delete_post($_GET['group_id'], true);  // true means force delete (won't go to trash)
+
+        // Redirect back to the coupon group list with a message maybe
+        wp_redirect(admin_url('admin.php?page=coupon-group&group_deleted=true&group_name=' . $group_name));
+        exit;
+    }
+}
+add_action('admin_init', 'coupon_group_deletion_handler');
 
 /**
  * Convert date from 'yy-mm-dd' to 'dd-mm-yy'.

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Handle form submission for creating new coupon custom_coupons.
+ * Handles form submission for creating new coupon custom_coupons.
  */
 function create_coupon_group_handler() {
     // Check if form has been submitted
@@ -14,15 +14,14 @@ function create_coupon_group_handler() {
     }
     try {
 
-        $group_id=sanitize_text_field( $_POST['group_id']);
-
+        $group_id= (isset($_POST['group_id']) ? sanitize_text_field($_POST['group_id']) : null);
         // Save form data for prepopulated fields
         $form_data = array(
             'group_name' => (isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : null),
             'wc_coupons' => ( isset( $_POST['wc_coupons'] ) 
                 && is_array( $_POST['wc_coupons'] ) ) 
                 ? array_map( 'sanitize_text_field', $_POST['wc_coupons'] ) : array(),
-            'expiry_date' => 'sanitize_text_field'( $_POST['expiry_date'] ),
+            'expiry_date' => (isset($_POST['expiry_date']) ? sanitize_text_field($_POST['expiry_date']) : null),
             'customers' => ( isset( $_POST['customers'] ) 
                 && is_array( $_POST['customers'] ) ) 
                 ? array_map( 'sanitize_text_field', $_POST['customers'] ) : array(),
@@ -30,7 +29,7 @@ function create_coupon_group_handler() {
         );         
 
         // Validating the form data       
-        $expiry_date   = is_valid_expiry_date(  $form_data['expiry_date'],   $form_data['is_active']);
+        $expiry_date = is_valid_expiry_date($form_data['expiry_date'], $form_data['is_active']);      
 
         $post_id = null;
 
@@ -41,13 +40,13 @@ function create_coupon_group_handler() {
                 'ID'           => $group_id, // Your post ID you want to update
                 'post_title'   => $form_data['group_name'],
                 'post_content' => 'Updated content of the post.',
-            )); 
+            ));
             if (is_wp_error($post_id)) {
                 $errors = $post_id->get_error_messages();
                 $error_string = implode("\n", $errors);
                 throw new Exception($error_string);
             }
-        } else{
+        } else {
             // Create new post in the coupon_custom_coupon custom post type
             $post_id = wp_insert_post( array(
                 'post_title'    => $form_data['group_name'],
@@ -59,12 +58,16 @@ function create_coupon_group_handler() {
         if ( $post_id ) {
             // Save additional data as post meta
             update_post_meta( $post_id, '_wc_coupons', $form_data['wc_coupons'], );
-            update_post_meta( $post_id, '_expiry_date', $expiry_date );
+            update_post_meta( $post_id, '_expiry_date', $expiry_date, );
             update_post_meta( $post_id, '_customers', $form_data['customers'], );
             update_post_meta( $post_id, '_is_active', $form_data['is_active'], );
 
-            // Optionally redirect to the post editing screen for the newly created custom_coupon or show a success message.
-            wp_redirect(admin_url("admin.php?page=coupon-group"));
+            // Redirect back to form page
+            if($group_id){
+                wp_redirect(admin_url('admin.php?page=coupon-group&group_updated=true&group_name=' . $form_data['group_name']));
+            } else {
+                wp_redirect(admin_url('admin.php?page=coupon-group&group_created=true&group_name=' . $form_data['group_name']));
+            }
         } else {
             // Handle error, e.g., display an error message to the admin.
             throw new Exception("An unexpected error occurred. Please try again later.");
@@ -75,7 +78,6 @@ function create_coupon_group_handler() {
 
         // Redirect back to form page
         if($group_id){
-
             wp_redirect(admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id));
         } else {
             wp_redirect(admin_url('admin.php?page=new_group'));
@@ -85,7 +87,7 @@ function create_coupon_group_handler() {
 add_action('admin_post_create_coupon_group_handler', 'create_coupon_group_handler');
 
 /**
- * Handle form submission for adding custom coupon. 
+ * Handles form submission for adding custom coupon. 
  * 
  */
 function new_coupon_option_handler() {
@@ -108,6 +110,7 @@ function new_coupon_option_handler() {
 
         
         update_option('custom_coupon_options', $custom_coupons);
+        wp_redirect(admin_url('admin.php?page=coupon-group&option_update=true&option_name='));
         exit;
     } catch (Exception $e) {
         set_transient('new_coupon_option_form_error_msg', $e->getMessage(), 45);
@@ -119,12 +122,11 @@ function new_coupon_option_handler() {
 }
 add_action('admin_post_new_coupon_option_form_action', 'new_coupon_option_handler');
 
-
 /**
  * Check if the provided date is valid and not a past date.
  *
  * @param string $date Date in 'yy-mm-dd' format.
- * @return bool True if valid and not in the past, false otherwise.
+ * @return string The is_active value (1 = true)
  */
 function is_valid_expiry_date($date, $is_active) {
     if (empty($date)) {
@@ -149,8 +151,9 @@ function is_valid_expiry_date($date, $is_active) {
             throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
         }
         return $date;
+    }else {
+        return $date;    
     }
-    return $date;    
 }
 
 /**
@@ -165,8 +168,4 @@ function is_not_empty($field_value, $err_message) {
         throw new Exception($err_message);
     }
     return true;
-}
-
-function edit_coupon_group_handler(){
-    return;
 }
