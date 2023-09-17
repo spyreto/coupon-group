@@ -63,11 +63,23 @@ Background color: #f8f9fa
   margin-top: 2em;
 }
 
+.admin-cg-form-checkbox {
+  display: flex;
+  align-items: center;
+  margin-top: 2em;
+}
+
+.admin-cg-form-checkbox label {
+  font-size: 1.4em;
+  margin-right: 0.8em;
+  padding: 0.6em 0;
+}
+
 .admin-cg-form-field label {
   font-size: 1.4em;
   margin-bottom: 0.8em;
 }
-
+.admin-cg-form-checkbox input,
 .admin-cg-form-field input {
   font-size: 1.4em;
 }

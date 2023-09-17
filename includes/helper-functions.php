@@ -175,3 +175,66 @@ function convert_date_format($date) {
     // Convert and return in 'dd-mm-yy' format
     return date('d-m-y', $date_timestamp);
 }
+
+
+function auto_apply_coupon($cart) {
+    if ( ! is_admin() && $cart->is_empty() === false ) {
+        // Today's date in 'dd-mm-yyyy' format
+        $today = strtotime(date('y-m-d'));
+
+        $customer = $cart->get_customer();
+        $customer_id = $customer->get_id();
+
+        $args = array(
+            'post_type'  => 'coupon_group',
+            'posts_per_page' => -1, // retrieve all posts; adjust as needed
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_customers',
+                    'value' => '"' . $customer_id . '"',
+                    'compare' => 'LIKE'
+                ),
+                array(
+                    'key' => '_is_active',
+                    'value' => 1,
+                    'compare' => '='
+                ),
+                array(
+                    'key' => '_expiry_date',
+                    'value' => $today,
+                    'compare' => '>=', // This assumes the date is saved in an ascending format. Adjust if needed.
+                    'type' => 'CHAR'
+                )
+            )
+        );
+
+        $query = new WP_Query($args);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                error_log('fifis');
+                $query->the_post();
+                $group_id = get_the_ID();
+
+                $wc_coupons = get_post_meta( $group_id, '_wc_coupons', true);
+
+                // Add coupons discounts
+                foreach($wc_coupons as $coupon_id){
+                    $coupon_post = get_post($coupon_id);
+                    $coupon_code = $coupon_post->post_title;
+                    $coupon_data = new WC_Coupon( $coupon_code );
+
+                    if ( ! $cart->has_discount( $coupon_code ) ) {
+                        $cart->add_discount( $coupon_code );
+                    }
+                }                
+            }
+        } else {
+            error_log("No Coupon");
+        }
+        wp_reset_postdata();
+    }
+}
+
+add_action('woocommerce_before_calculate_totals', 'auto_apply_coupon');

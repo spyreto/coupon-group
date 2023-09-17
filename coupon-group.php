@@ -266,8 +266,9 @@ class CouponGroupPlugin
                                 </div>
 
                                 <!-- Is Active -->
-                                <div class="admin-cg-form-field ">
-                                    <input type="checkbox" name="is_active" value="1"
+                                <div class="admin-cg-form-checkbox">
+                                    <label for="is_active">Is active:</label>
+                                    <input type="checkbox"  id="is_active" name="is_active" value="1"
                                         <?php 
                                             isset($form_data['is_active']) ?
                                             checked($form_data['is_active'],1) : checked($old_coupon_group->is_active,1)                                  
@@ -331,8 +332,9 @@ class CouponGroupPlugin
                                 </div>
 
                                  <!-- Is Active -->
-                                <div class="admin-cg-form-field ">
-                                    <input type="checkbox" name="is_active" value="1"
+                                <div class="admin-cg-form-checkbox">
+                                    <label for="is_active">Is active:</label>
+                                    <input type="checkbox" id="is_active" name="is_active" value="1"
                                         <?php 
                                             isset($form_data['_is_active']) ?
                                             checked($form_data['_is_active'],1) : "";                                  
