@@ -17,6 +17,10 @@ function get_readable_discount_type($type) {
     return isset($types[$type]) ? $types[$type] : __('Unknown discount type', 'woocommerce');
 }
 
+/**
+ * Displays coupon groups.
+ * 
+ */
 function display_coupon_groups() {
     // Fetch the coupon groups
     $args = array(
@@ -147,8 +151,22 @@ function coupon_group_deletion_handler() {
         
         $group_id = $_GET['group_id'];
         $group_name = get_the_title($group_id);
+
+        // $deleted_group['name'] = get_the_title($group_id);
+        // $deleted_group['wc_coupons'] = get_post_meta($group_id, '_wc_coupons', true);
+        // $deleted_group['customers'] = get_post_meta($group_id, '_customers', true); 
+
+        // $deleted_group = array(
+        //     'name' => get_the_title($group_id),
+        //     'wc_coupons' => get_post_meta($group_id, '_wc_coupons', true),
+        //     'customers' => get_post_meta($group_id, '_customers', true),
+        // );
+
         // Delete the coupon group
         wp_delete_post($_GET['group_id'], true);  // true means force delete (won't go to trash)
+
+        // // Hook firing for Group deletion
+        // do_action('coupon_group_group_deletion',  $group_id);
 
         // Redirect back to the coupon group list with a message maybe
         wp_redirect(admin_url('admin.php?page=coupon-group&group_deleted=true&group_name=' . $group_name));
@@ -157,84 +175,67 @@ function coupon_group_deletion_handler() {
 }
 add_action('admin_init', 'coupon_group_deletion_handler');
 
+
 /**
- * Convert date from 'yy-mm-dd' to 'dd-mm-yy'.
+ * Check if the provided date is valid and not a past date.
  *
  * @param string $date Date in 'yy-mm-dd' format.
- * @return string Date in 'dd-mm-yy' format or false if provided date is invalid.
+ * @return string The is_active value (1 = true)
  */
-function convert_date_format($date) {
-    // Convert date string to timestamp
-    $date_timestamp = strtotime($date);
+function is_valid_expiry_date($date, $is_active) {
+    if (empty($date)) {
+        return null;
+    } elseif (!preg_match('/^\d{2}-\d{2}-\d{4}$/', $date)) {
+        // Check if the format is correct
+        throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
+    } elseif ($is_active == "1") { // If the offer is active
+        // Convert date string to timestamp
+        $date_timestamp = strtotime($date);
+        
+        // Check if the date is a valid date (for example, not something like 00-00-00)
+        if (!$date_timestamp) {
+            throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
+        }
 
-    // Check if it's a valid timestamp
-    if (!$date_timestamp) {       
-        return false;
-    }
-
-    // Convert and return in 'dd-mm-yy' format
-    return date('d-m-y', $date_timestamp);
-}
-
-
-function auto_apply_coupon($cart) {
-    if ( ! is_admin() && $cart->is_empty() === false ) {
-        // Today's date in 'dd-mm-yyyy' format
+        // Get today's date
         $today = strtotime(date('y-m-d'));
 
-        $customer = $cart->get_customer();
-        $customer_id = $customer->get_id();
-
-        $args = array(
-            'post_type'  => 'coupon_group',
-            'posts_per_page' => -1, // retrieve all posts; adjust as needed
-            'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'key'     => '_customers',
-                    'value' => '"' . $customer_id . '"',
-                    'compare' => 'LIKE'
-                ),
-                array(
-                    'key' => '_is_active',
-                    'value' => 1,
-                    'compare' => '='
-                ),
-                array(
-                    'key' => '_expiry_date',
-                    'value' => $today,
-                    'compare' => '>=', // This assumes the date is saved in an ascending format. Adjust if needed.
-                    'type' => 'CHAR'
-                )
-            )
-        );
-
-        $query = new WP_Query($args);
-
-        if ($query->have_posts()) {
-            while ($query->have_posts()) {
-                error_log('fifis');
-                $query->the_post();
-                $group_id = get_the_ID();
-
-                $wc_coupons = get_post_meta( $group_id, '_wc_coupons', true);
-
-                // Add coupons discounts
-                foreach($wc_coupons as $coupon_id){
-                    $coupon_post = get_post($coupon_id);
-                    $coupon_code = $coupon_post->post_title;
-                    $coupon_data = new WC_Coupon( $coupon_code );
-
-                    if ( ! $cart->has_discount( $coupon_code ) ) {
-                        $cart->add_discount( $coupon_code );
-                    }
-                }                
-            }
-        } else {
-            error_log("No Coupon");
+        // Check if the provided date is in the past
+        if ($date_timestamp <= $today) {
+            throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
         }
-        wp_reset_postdata();
+        return $date;
+    }else {
+        return $date;    
     }
 }
 
-add_action('woocommerce_before_calculate_totals', 'auto_apply_coupon');
+/**
+ * Check if the provided string value isn't empty.
+ *
+ * @param string $field_value Value in string format.
+ * @param string $err_message Error message for the exception in string format.
+ * @return bool True if valid , otherwise throws an error.
+ */
+function is_not_empty($field_value, $err_message) {
+    if (empty(trim($field_value))){
+        throw new Exception($err_message);
+    }
+    return true;
+}
+
+/**
+ * Retrieve WooCommerce coupon code from coupon ID.
+ *
+ * @param int $coupon_id The ID of the WooCommerce coupon.
+ * @return string|null The coupon code or null if the coupon doesn't exist.
+ */
+function get_wc_coupon_code_from_id($coupon_id) {
+    $coupon_post = get_post($coupon_id);
+    
+    if ($coupon_post && $coupon_post->post_type === 'shop_coupon') {
+        return strtolower($coupon_post->post_title);
+    }
+    
+    return null;
+}

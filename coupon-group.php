@@ -23,6 +23,8 @@ if ( ! function_exists( 'is_woocommerce_activated' ) ) {
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/form-handler.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/helper-functions.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/coupons-state-handler.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cron-tasks.php';
 
 class CouponGroupPlugin
 {

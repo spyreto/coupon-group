@@ -1,8 +1,11 @@
+
 <?php
 // Ensure this file is being included by WordPress (and not accessed directly)
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
+
+require_once plugin_dir_path( __FILE__ ) . 'helper-functions.php';
 
 /**
  * Handles form submission for creating new coupon custom_coupons.
@@ -122,50 +125,3 @@ function new_coupon_option_handler() {
 }
 add_action('admin_post_new_coupon_option_form_action', 'new_coupon_option_handler');
 
-/**
- * Check if the provided date is valid and not a past date.
- *
- * @param string $date Date in 'yy-mm-dd' format.
- * @return string The is_active value (1 = true)
- */
-function is_valid_expiry_date($date, $is_active) {
-    if (empty($date)) {
-        return null;
-    } elseif (!preg_match('/^\d{2}-\d{2}-\d{4}$/', $date)) {
-        // Check if the format is correct
-        throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
-    } elseif ($is_active == "1") { // If the offer is active
-        // Convert date string to timestamp
-        $date_timestamp = strtotime($date);
-        
-        // Check if the date is a valid date (for example, not something like 00-00-00)
-        if (!$date_timestamp) {
-            throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
-        }
-
-        // Get today's date
-        $today = strtotime(date('y-m-d'));
-
-        // Check if the provided date is in the past
-        if ($date_timestamp <= $today) {
-            throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
-        }
-        return $date;
-    }else {
-        return $date;    
-    }
-}
-
-/**
- * Check if the provided string value isn't empty.
- *
- * @param string $field_value Value in string format.
- * @param string $err_message Error message for the exception in string format.
- * @return bool True if valid , otherwise throws an error.
- */
-function is_not_empty($field_value, $err_message) {
-    if (empty(trim($field_value))){
-        throw new Exception($err_message);
-    }
-    return true;
-}
