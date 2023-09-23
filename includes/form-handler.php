@@ -60,10 +60,10 @@ function create_coupon_group_handler() {
 
         if ( $post_id ) {
             // Save additional data as post meta
-            update_post_meta( $post_id, '_wc_coupons', $form_data['wc_coupons'], );
+            update_post_meta( $post_id, '_is_active', $form_data['is_active'], );
             update_post_meta( $post_id, '_expiry_date', $expiry_date, );
             update_post_meta( $post_id, '_customers', $form_data['customers'], );
-            update_post_meta( $post_id, '_is_active', $form_data['is_active'], );
+            update_post_meta( $post_id, '_wc_coupons', $form_data['wc_coupons'], );
 
             // Redirect back to form page
             if($group_id){

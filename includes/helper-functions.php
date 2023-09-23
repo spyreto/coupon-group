@@ -152,23 +152,8 @@ function coupon_group_deletion_handler() {
         $group_id = $_GET['group_id'];
         $group_name = get_the_title($group_id);
 
-        // $deleted_group['name'] = get_the_title($group_id);
-        // $deleted_group['wc_coupons'] = get_post_meta($group_id, '_wc_coupons', true);
-        // $deleted_group['customers'] = get_post_meta($group_id, '_customers', true); 
-
-        // $deleted_group = array(
-        //     'name' => get_the_title($group_id),
-        //     'wc_coupons' => get_post_meta($group_id, '_wc_coupons', true),
-        //     'customers' => get_post_meta($group_id, '_customers', true),
-        // );
-
-        // Delete the coupon group
+       
         wp_delete_post($_GET['group_id'], true);  // true means force delete (won't go to trash)
-
-        // // Hook firing for Group deletion
-        // do_action('coupon_group_group_deletion',  $group_id);
-
-        // Redirect back to the coupon group list with a message maybe
         wp_redirect(admin_url('admin.php?page=coupon-group&group_deleted=true&group_name=' . $group_name));
         exit;
     }
@@ -239,3 +224,30 @@ function get_wc_coupon_code_from_id($coupon_id) {
     
     return null;
 }
+
+/**
+* Checks if a coupon is part of a group.
+*
+* @param int $coupon_id WooCommerce coupon ID.
+* @return bool True if part of a group, false otherwise.
+*/
+function is_coupon_part_of_group($coupon_id) {
+    // Here you should have the logic to determine if the coupon is part of a group.
+    // For example, you can check if the coupon ID exists in any 'coupon_group' meta fields.
+    $args = array(
+        'post_type'  => 'coupon_group',
+        'meta_query' => array(
+            array(
+                'key'     => '_wc_coupons',
+                'value'   => $coupon_id,
+                'compare' => 'LIKE'
+            )
+        )
+    );
+  
+    $coupon_group_query = new WP_Query($args);
+    if ($coupon_group_query->have_posts()) {
+        return true;  // The coupon is part of a group
+    }
+    return false;  // The coupon is not part of a group
+  }

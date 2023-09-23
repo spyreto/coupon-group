@@ -12,8 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This function is intended to run upon plugin activation.
  */
 function start_my_daily_task() {
-  if (!wp_next_scheduled('my_daily_coupon_group_check')) {
-    wp_schedule_event(time(), 'daily', 'my_daily_coupon_group_check');
+  if (!wp_next_scheduled('daily_coupon_group_check')) {
+    wp_schedule_event(time(), 'daily', 'daily_coupon_group_check');
   }
 }
 register_activation_hook(__FILE__, 'start_my_daily_task');
@@ -24,6 +24,6 @@ register_activation_hook(__FILE__, 'start_my_daily_task');
  * This function is intended to run upon plugin deactivation.
  */
 function stop_my_daily_task() {
-  wp_clear_scheduled_hook('my_daily_coupon_group_check');
+  wp_clear_scheduled_hook('daily_coupon_group_check');
 }
 register_deactivation_hook(__FILE__, 'stop_my_daily_task');

@@ -20,35 +20,27 @@ function check_coupon_groups_expiry() {
   $args = array(
       'post_type' => 'coupon_group',
       'meta_query' => array(
+        'relation' => 'AND',
           array(
-              'key' => 'expiry_date',
+              'key' => '_expiry_date',
               'value' => $today,
               'compare' => '<'
           ),
-      )
+          array(
+            'key'     => '_is_active',
+            'value'   => '1',
+            'compare' => '!='
+          )
+        )
   );
 
   $expired_coupon_groups = get_posts($args);
 
   foreach ($expired_coupon_groups as $group) {
-      $wc_coupons = get_post_meta($group->ID, '_wc_coupons', true);
-      $customers = get_post_meta($group->ID, '_customers', true);
-
-    // Here, you can take desired actions for expired groups.
-    // For example, disabling associated WC coupons:
-    foreach ($wc_coupons as $coupon_id) {
-      wp_update_post(array(
-          'ID' => $coupon_id,
-          'post_status' => 'draft'
-      ));
-      foreach ($customers as $user_id) {
-        // Remove coupon from the user's session
-        remove_coupon_from_user_session($user_id, $coupon_id);
-      }
-    }
+   update_post_meta( $group->ID, '_is_active', null );
   }
 }
-add_action('my_daily_coupon_group_check', 'check_coupon_groups_expiry');
+add_action('daily_coupon_group_check', 'check_coupon_groups_expiry');
 
 
 /**
@@ -60,14 +52,17 @@ add_action('my_daily_coupon_group_check', 'check_coupon_groups_expiry');
  *
  * @param int $post_id The ID of the post being deleted.
  */
-function remove_coupons_on_coupon_group_deletion($post_id) {
+function remove_coupons_from_users($post_id, $remove_from_users = null, $removed_coupons = null) {
   // Check if the post being deleted is of the 'coupon_group' post type
   if (get_post_type($post_id) !== 'coupon_group') {
       return;
   }
   
-  $wc_coupons = get_post_meta($post_id, '_wc_coupons', true);
-  $customers = get_post_meta($post_id, '_customers', true);
+  $customers = (empty($remove_from_users) || !isset($remove_from_users))?  
+    get_post_meta($post_id, '_customers', true) : $remove_from_users;
+  
+  $wc_coupons = (empty($removed_coupons) || !isset($removed_coupons))? 
+    get_post_meta($post_id, '_wc_coupons', true) : $removed_coupons;
 
   if (empty($wc_coupons) || empty($customers)) {   
     return;
@@ -80,7 +75,7 @@ function remove_coupons_on_coupon_group_deletion($post_id) {
     }
   }
 }
-add_action('before_delete_post', 'remove_coupons_on_coupon_group_deletion');
+add_action('before_delete_post', 'remove_coupons_from_users');
 
 
 /**
@@ -103,33 +98,232 @@ function remove_coupon_from_user_session($user_id, $coupon_id) {
   if (!in_array($coupon_id, $coupons_to_remove)) {
     $coupons_to_remove[] = $coupon_id;
     update_user_meta($user_id, '_coupons_to_remove', $coupons_to_remove);
+    // Save the current timestamp as another user meta
+    $timestamp_key = '_coupons_to_remove' . '_timestamp';
+    update_user_meta($user_id, $timestamp_key, current_time('mysql'));
   }
 }
 
 /**
- * Checks for any flagged coupons to remove from the user's session.
+ * Automatically adds coupons from a coupon_group to the users who are members of that group.
  *
- * When the user interacts with the site, this function will check if there are
- * any coupons flagged for removal and remove them from the user's WooCommerce cart session.
+ * This function is triggered when a 'coupon_group' post is saved. It fetches
+ * the associated WC coupons and users, and flags the coupons to be added to the users' next session.
+ *
+ * @param int $meta_id The ID of the meta data being saved.
+ * @param int $post_id The ID of the post being saved.
  */
-function check_and_remove_flagged_coupons() {
-  if (!is_user_logged_in() || current_user_can('manage_options')) {
-    return; // Only proceed for logged-in users
-  }
-
-  $user_id = get_current_user_id();
-  $coupons_to_remove = get_user_meta($user_id, '_coupons_to_remove', true);
-
-  if (!$coupons_to_remove || !is_array($coupons_to_remove)) {
+function add_coupons_to_users($meta_id, $post_id, $add_to_users = null, $coupons_to_add = null) {
+  // Check if it's a 'coupon_group' post type
+  if (get_post_type($post_id) !== 'coupon_group') {
     return;
   }
 
-  $cart = WC()->cart;
-  
-  // Get applied wc coupons
-  $applied_coupons = WC()->session->get( 'applied_coupons' ) !== null ? WC()->session->get( 'applied_coupons' ) : '';
-  $coupon_codes_to_remove =array();
+  $customers = (empty($add_to_users) || !isset($add_to_users))?
+    get_post_meta($post_id, '_customers', true) : $add_to_users;
 
+  $wc_coupons = (empty($coupons_to_add) || !isset($coupons_to_add))?
+    get_post_meta($post_id, '_wc_coupons', true) : $coupons_to_add;
+
+  if (!$wc_coupons || !$customers) {
+    return;
+  }
+
+  foreach ($customers as $user_id) {
+    foreach ($wc_coupons as $coupon_id) {
+      flag_coupon_for_addition($user_id, $coupon_id);
+      notify_user_about_coupon($user_id, $post_id);
+    }
+  }
+}
+add_action('added_post_meta', 'add_coupons_to_users', 10, 2);
+
+/**
+ * Flags a specific coupon to be added to a user's next session.
+ *
+ * @param int $user_id   The ID of the user.
+ * @param int $coupon_id The ID of the coupon to flag for addition.
+ */
+function flag_coupon_for_addition($user_id, $coupon_id) {
+  $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true);
+  if (!$coupons_to_add) {
+    $coupons_to_add = array();
+  }
+  
+  if (!in_array($coupon_id, $coupons_to_add)) {
+    $coupons_to_add[] = $coupon_id;
+    update_user_meta($user_id, '_coupons_to_add', $coupons_to_add);
+    // Save the current timestamp as another user meta
+    $timestamp_key = '_coupons_to_add' . '_timestamp';
+    update_user_meta($user_id, $timestamp_key, current_time('mysql'));
+  }
+}
+
+/**
+ * Adds or removes any flagged coupons to the user's session.
+ */
+function check_flagged_coupons() {
+  if (!is_user_logged_in() || current_user_can('manage_options')) {
+      return;
+  }
+
+  $user_id = get_current_user_id();
+  $applied_coupons = WC()->session->get( 'applied_coupons' ) !== null ? WC()->session->get( 'applied_coupons' ) : '';
+  $cart = WC()->cart;
+
+  $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true) !== ''? 
+    get_user_meta($user_id, '_coupons_to_add', true) : array();
+  $coupons_to_remove = get_user_meta($user_id, '_coupons_to_remove', true) !== ''? 
+    get_user_meta($user_id, '_coupons_to_remove', true) : array();
+
+  if (empty($coupons_to_add) && empty($coupons_to_remove)){
+    return;
+  } elseif (!empty($coupons_to_add) && empty($coupons_to_remove)) {
+    add_coupons_to_cart($user_id, $coupons_to_add, $applied_coupons, $cart);
+  } elseif (!empty($coupons_to_remove) && empty($coupons_to_add)) {
+    remove_coupons_from_cart($user_id, $coupons_to_remove, $applied_coupons, $cart);
+  } else {
+    // Get timestamps
+    $coupons_to_add_timestamp = get_user_meta($user_id, '_coupons_to_add_timestamp', true);
+    $coupons_to_remove_timestamp = get_user_meta($user_id, '_coupons_to_remove_timestamp', true);
+
+    //Get datetimes
+    $coupons_to_add_datetime = $coupons_to_add_timestamp !== ''?  
+      new DateTime($coupons_to_add_timestamp) : new DateTime();
+    $coupons_to_remove_datetime = $coupons_to_remove_timestamp !== ''?  
+      new DateTime($coupons_to_remove_timestamp) : new DateTime();
+
+    if ($coupons_to_add_datetime > $coupons_to_remove_datetime){
+      add_coupons_to_cart($user_id, $coupons_to_add, $applied_coupons, $cart);
+      
+      $updated_coupons_to_remove = array_diff($coupons_to_remove, $coupons_to_add);
+      remove_coupons_from_cart($user_id, $updated_coupons_to_remove, $applied_coupons, $cart);
+    } else {
+      remove_coupons_from_cart($user_id, $coupons_to_remove, $applied_coupons, $cart);
+
+      $updated_coupons_to_add = array_diff($coupons_to_add, $coupons_to_remove);
+      add_coupons_to_cart($user_id, $updated_coupons_to_add, $applied_coupons, $cart);
+    } 
+  }
+  // Update cart total
+  $cart->calculate_totals();
+}
+add_action('wp_loaded', 'check_flagged_coupons');
+
+
+// Temporary storage for the old coupon group values
+global $before_update_coupon_group;
+$before_update_coupon_group = array();
+
+// Hook before metadata is updated
+add_filter('update_post_metadata', function ($check, $object_id, $meta_key) use (&$before_update_coupon_group ) {
+  // Get the old value
+  $before_update_coupon_group[$meta_key] = get_post_meta($object_id, $meta_key, true);
+  return $check; // Allow the update to happen
+}, 10, 3);
+
+
+/**
+ * Handle coupon group post update logic.
+ *
+ * @param int $post_id The post ID.
+ * @param WP_Post $post_after Post object following the update.
+ * @param WP_Post $post_before Post object before the update.
+ */
+function handle_coupon_group_update($meta_id, $object_id, $meta_key, $meta_value) {
+  // Check if the post being updated is of the 'coupon_group' post type
+  if (get_post_type($object_id) !== 'coupon_group') {
+    return;
+  }
+
+  global $before_update_coupon_group;
+
+  switch ($meta_key) {
+    case "_is_active":
+      $is_activated = $meta_value;
+      // Activation or deactivation logic
+      if ($is_activated) {  // If activated
+        add_coupons_to_users($meta_id, $object_id);
+      } else {  // If deactivated
+        remove_coupons_from_users($object_id);
+      }
+      break;
+
+    case "_customers":
+      $customers_after = $meta_value;
+      $customers_before = (isset($before_update_coupon_group['_customers'])? 
+      $before_update_coupon_group['_customers'] : $meta_value);  
+
+      // Logic for adding/removing users
+      $added_users = array_diff($customers_after, $customers_before);
+      $removed_users = array_diff($customers_before, $customers_after);
+
+      if (!empty($added_users)) {
+        add_coupons_to_users($meta_id, $object_id, $added_users);
+      }
+      if (!empty($removed_users)) {
+        remove_coupons_from_users($object_id, $removed_users);
+      }
+      break;
+
+    case "_wc_coupons":
+      $wc_coupons_after = $meta_value;
+      $wc_coupons_before = (isset($before_update_coupon_group['_wc_coupons'])? 
+        $before_update_coupon_group['_wc_coupons'] : null);
+      
+      // Logic for adding/removing coupons
+      $added_coupons = array_diff($wc_coupons_after, $wc_coupons_before);
+      $removed_coupons = array_diff($wc_coupons_before, $wc_coupons_after);
+      
+      if(!empty($added_coupons || !empty($removed_coupons))){
+        
+        if (!empty($added_coupons)) {
+          add_coupons_to_users($meta_id, $object_id, null, $added_coupons);
+        }
+        if (!empty($removed_coupons)) {
+          remove_coupons_from_users($object_id, null, $removed_coupons);
+        }
+      }
+      break;
+    default:
+      echo "I don't know you!";
+      break;
+  } 
+}
+add_action('updated_post_meta', 'handle_coupon_group_update', 10, 4);
+
+
+/**
+ * Adds coupons to user's cart session.
+ *
+ * @param int $user_id The user's ID.
+ * @param array $coupons_to_remove Coupons to add to a user.
+ * @param array $applied_coupons Applied coupons.
+ * @param WC_Cart $cart User's cart.
+ */
+function add_coupons_to_cart($user_id, $coupons_to_add, $applied_coupons, $cart ) {  
+  foreach ($coupons_to_add as $coupon_id) {
+    $coupon_code = get_wc_coupon_code_from_id($coupon_id);
+    if(!$coupon_code) continue;
+    if( !in_array( $coupon_code, $applied_coupons ) ) {
+      $cart->apply_coupon($coupon_code);
+    }
+  }
+  // Clear the flagged coupons for addition for the user
+  delete_user_meta($user_id, '_coupons_to_add');
+  delete_user_meta($user_id, '_coupons_to_add_timestamp');
+}
+
+/**
+ * Removes coupons from user's cart session.
+ *
+ * @param int $post_id The post ID.
+ * @param array $coupons_to_remove Coupons to remove from user.
+ * @param array $applied_coupons Applied coupons.
+ * @param WC_Cart $cart User's cart.
+ */
+function remove_coupons_from_cart($user_id, $coupons_to_remove, $applied_coupons, $cart ) {
+  $coupon_codes_to_remove =array();
   // Save coupon ids as coupon codes
   foreach ($coupons_to_remove as $coupon_id) {
     $coupon_code = get_wc_coupon_code_from_id($coupon_id);
@@ -148,97 +342,16 @@ function check_and_remove_flagged_coupons() {
       $cart->remove_coupon($coupon_code);
     }
   }
-
-  $cart->calculate_totals();
   // Clear the flagged coupons for removal for the user
   delete_user_meta($user_id, '_coupons_to_remove');
+  delete_user_meta($user_id, '_coupons_to_remove_timestamp');
 }
-add_action('wp_loaded', 'check_and_remove_flagged_coupons'); 
-
-
-/**
- * Automatically adds coupons from a coupon_group to the users who are members of that group.
- *
- * This function is triggered when a 'coupon_group' post is saved. It fetches
- * the associated WC coupons and users, and flags the coupons to be added to the users' next session.
- *
- * @param int $meta_id The ID of the meta data being saved.
- * @param int $post_id The ID of the post being saved.
- */
-function add_coupons_to_user_session($meta_id, $post_id) {
-  // Check if it's a 'coupon_group' post type
-  if (get_post_type($post_id) !== 'coupon_group') {
-      return;
-  }
-
-  $wc_coupons = get_post_meta($post_id, '_wc_coupons', true);
-  $customers = get_post_meta($post_id, '_customers', true);
-
-  if (!$wc_coupons || !$customers) {
-    return;
-  }
-
-  foreach ($customers as $user_id) {
-      foreach ($wc_coupons as $coupon_id) {
-        flag_coupon_for_addition($user_id, $coupon_id);
-        notify_user_about_coupon($user_id, $post_id);
-      }
-  }
-}
-add_action('added_post_meta', 'add_coupons_to_user_session', 10, 2);
-
-/**
- * Flags a specific coupon to be added to a user's next session.
- *
- * @param int $user_id   The ID of the user.
- * @param int $coupon_id The ID of the coupon to flag for addition.
- */
-function flag_coupon_for_addition($user_id, $coupon_id) {
-  $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true);
-  if (!$coupons_to_add) {
-    $coupons_to_add = array();
-  }
-  
-  if (!in_array($coupon_id, $coupons_to_add)) {
-    $coupons_to_add[] = $coupon_id;
-    update_user_meta($user_id, '_coupons_to_add', $coupons_to_add);
-  }
-}
-
-/**
- * Adds any flagged coupons to the user's session.
- */
-function check_and_add_flagged_coupons() {
-  if (!is_user_logged_in() || current_user_can('manage_options')) {
-      return;
-  }
-
-  $user_id = get_current_user_id();
-  $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true);
-
-  if (!$coupons_to_add || !is_array($coupons_to_add)) {
-      return;
-  }
-  $applied_coupons = WC()->session->get( 'applied_coupons' ) !== null ? WC()->session->get( 'applied_coupons' ) : '';
-  $cart = WC()->cart;
-
-  foreach ($coupons_to_add as $coupon_id) {
-      $coupon_code = get_wc_coupon_code_from_id($coupon_id);
-      if(!$coupon_code) continue;
-      if( !in_array( $coupon_code, $applied_coupons ) ) {
-        $cart->apply_coupon($coupon_code);
-      }
-  }
-  $cart->calculate_totals();
-  delete_user_meta($user_id, '_coupons_to_add');
-}
-add_action('wp_loaded', 'check_and_add_flagged_coupons');
 
 
 /**
  * Sends an email notification to a user about a new coupon.
  *
- * @param int $user_id   The ID of the user.
+ * @param int $user_id The ID of the user.
  * @param int $group_id The ID of the coupon group.
  */
 function notify_user_about_coupon($user_id, $group_id) {
@@ -256,50 +369,25 @@ function notify_user_about_coupon($user_id, $group_id) {
 
 
 /**
- * Filters the coupon message displayed on the frontend.
+ * Overrides the default WooCommerce coupon applied message.
  *
- * @param string $message Default coupon message.
- * @param string $msg_code Message code.
- * @param WC_Coupon $coupon Coupon object.
- * @return string Modified coupon message.
+ * @param string    $msg      The original message.
+ * @param int       $msg_code The message code.
+ * @param WC_Coupon $coupon   The coupon object.
+ * @return string The custom message for applied coupons or the original message.
  */
 function custom_coupon_message($message, $msg_code, $coupon) {
-  // Check if the coupon belongs to a group
-  if (is_coupon_part_of_group($coupon->get_id())) {
-      // Display a custom message for grouped coupons
-      return 'Your grouped coupon has been applied!';
+  // Display a custom message for grouped coupons
+  // 'Your grouped coupon has been applied!'
+
+  // Check if the msg_code corresponds to the "coupon applied" code and the coupon belongs to a group
+  if ($msg_code === WC_Coupon::WC_COUPON_SUCCESS && is_coupon_part_of_group($coupon->get_id())) {
+    $coupon_code = $coupon->get_code();
+    // Return your custom message for applied coupons
+    return __('You are member of a coupon group, coupon ' . $coupon_code . ' has been applied!');
   }
 
   // For non-grouped coupons, return the default message
   return $message;
 }
 add_filter('woocommerce_coupon_message', 'custom_coupon_message', 10, 3);
-
-/**
-* Checks if a coupon is part of a group.
-*
-* @param int $coupon_id WooCommerce coupon ID.
-* @return bool True if part of a group, false otherwise.
-*/
-function is_coupon_part_of_group($coupon_id) {
-  // Here you should have the logic to determine if the coupon is part of a group.
-  // For example, you can check if the coupon ID exists in any 'coupon_group' meta fields.
-  $args = array(
-      'post_type'  => 'coupon_group',
-      'meta_query' => array(
-          array(
-              'key'     => 'wc_coupons',
-              'value'   => $coupon_id,
-              'compare' => 'LIKE'
-          )
-      )
-  );
-
-  $coupon_group_query = new WP_Query($args);
-  if ($coupon_group_query->have_posts()) {
-      return true;  // The coupon is part of a group
-  }
-
-  return false;  // The coupon is not part of a group
-}
-
