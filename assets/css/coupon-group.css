@@ -66,7 +66,7 @@ Background color: #f8f9fa
 .admin-cg-form-checkbox {
   display: flex;
   align-items: center;
-  margin-top: 2em;
+  margin-top: 1.6em;
 }
 
 .admin-cg-form-checkbox label {
@@ -79,9 +79,35 @@ Background color: #f8f9fa
   font-size: 1.4em;
   margin-bottom: 0.8em;
 }
+.admin-cg-form-checkbox-option input,
 .admin-cg-form-checkbox input,
 .admin-cg-form-field input {
   font-size: 1.4em;
+}
+
+.admin-cg-form-checkbox-option {
+  display: grid;
+  grid-template-columns: 12em minmax(12em, 24em);
+  grid-template-rows: 1.6em 1fr;
+  gap: 0.6em;
+  justify-items: start;
+  align-items: start;
+  margin-top: 1.6em;
+}
+
+.admin-cg-form-checkbox-option label {
+  grid-area: 1/1/2/2;
+  font-size: 1.4em;
+}
+
+.admin-cg-form-checkbox-option input {
+  grid-area: 1/2/2/3;
+}
+
+.admin-cg-form-checkbox-option p {
+  font-size: 1.2em;
+  grid-area: 2/2/3/3;
+  margin: 0;
 }
 
 .admin-cg-form-field a {
@@ -93,6 +119,20 @@ Background color: #f8f9fa
   font-size: 1.2em;
   color: #1d2327;
   text-align: center;
+}
+
+.admin-cg-fieldset {
+  margin-top: 2em;
+}
+
+.admin-cg-fieldset h3 {
+  font-size: 1.8em;
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.admin-cg-fieldset div {
+  margin-left: 1.6em;
 }
 
 .sm-form-field {
