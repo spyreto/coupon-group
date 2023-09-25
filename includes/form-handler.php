@@ -1,4 +1,3 @@
-
 <?php
 // Ensure this file is being included by WordPress (and not accessed directly)
 if (!defined('ABSPATH')) {

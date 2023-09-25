@@ -115,8 +115,7 @@ function display_create_or_edit_group_page()
                             } else {
                                 foreach ($coupons as $coupon) {
                                 ?>
-                                    <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : '';
-                                                                                ?>>
+                                    <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
                                         <?php echo esc_attr($coupon->post_title); ?>
                                     </option>
                             <?php
@@ -176,11 +175,7 @@ function display_create_or_edit_group_page()
                                 <label for="<?php echo esc_attr($option['title']); ?>">
                                     <?php echo esc_attr($option['title']); ?>
                                 </label>
-                                <input type="checkbox" id="<?php echo esc_attr($option['title']); ?>" name="<?php echo esc_attr($option['id']); ?>" value="1" <?php
-                                                                                                                                                                isset($form_data['options']) && isset($form_data['options'][$option['id']]) ?
-                                                                                                                                                                    checked($form_data['options'][$option['id']], 1) :
-                                                                                                                                                                    checked($old_coupon_group->options[$option['id']], 1);
-                                                                                                                                                                ?>>
+                                <input type="checkbox" id="<?php echo esc_attr($option['title']); ?>" name="<?php echo esc_attr($option['id']); ?>" value="1" <?php isset($form_data['options']) && isset($form_data['options'][$option['id']]) ?  checked($form_data['options'][$option['id']], 1) : checked($old_coupon_group->options[$option['id']], 1); ?>>
                                 <p>
                                     <?php echo esc_attr($option['description']); ?>
                                 </p>

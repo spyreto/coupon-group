@@ -13,12 +13,8 @@ if (!defined('ABSPATH')) {
  */
 function start_my_daily_task()
 {
-  error_log('task start_my_daily_task');
   if (!wp_next_scheduled('daily_coupon_group_check')) {
     wp_schedule_event(time(), 'hourly', 'daily_coupon_group_check');
-    error_log('hourly');
-  } else {
-    error_log('error');
   }
 }
 register_activation_hook(__FILE__, 'start_my_daily_task');
@@ -30,7 +26,6 @@ register_activation_hook(__FILE__, 'start_my_daily_task');
  */
 function stop_my_daily_task()
 {
-  error_log('task stop_my_daily_task');
   wp_clear_scheduled_hook('daily_coupon_group_check');
 }
 register_deactivation_hook(__FILE__, 'stop_my_daily_task');
