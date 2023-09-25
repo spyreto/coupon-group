@@ -39,6 +39,9 @@ class CouponGroupPlugin
         add_action('admin_menu', array($this, 'menu'));
         add_action('admin_init', array($this, 'register_coupon_group_cpt'));
         add_action('admin_enqueue_scripts', array($this, 'add_scripts'));
+
+        register_activation_hook(__FILE__, 'start_my_daily_task');
+        register_deactivation_hook(__FILE__, 'stop_my_daily_task');
     }
 
     function add_scripts()

@@ -191,7 +191,7 @@ function is_valid_expiry_date($date, $is_active)
         $today = strtotime(date('y-m-d'));
 
         // Check if the provided date is in the past
-        if ($date_timestamp <= $today) {
+        if ($date_timestamp < $today) {
             throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
         }
         return $date;
@@ -306,4 +306,17 @@ function get_active_group_options($coupon_group)
 
     // Return the filtered array.
     return array_keys($filtered_array);
+}
+
+/**
+ * Function to modify the WHERE clause of the WP_Query object.
+ * It adds additional conditions to filter the posts based on multiple fields.
+ * @param string $where The existing WHERE clause of the WP_Query.
+ * @return string The modified WHERE clause with the additional conditions.
+ */
+function filter_posts_where_date_comparison($where)
+{
+    global $wpdb;
+    $where .= " AND STR_TO_DATE({$wpdb->postmeta}.meta_value, '%d-%m-%Y') < CURDATE()";
+    return $where;
 }

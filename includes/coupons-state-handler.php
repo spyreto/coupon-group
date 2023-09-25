@@ -7,44 +7,6 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * A cron job function that checks if coupon groups have expired.
- *
- * If a coupon group is determined to have expired, associated WooCommerce coupons
- * are set to 'draft' status, effectively disabling them.
- */
-function check_coupon_groups_expiry()
-{
-  // Get today's date
-  $today = strtotime(date('y-m-d'));
-
-  // Query coupon_groups that are expired
-  $args = array(
-    'post_type' => 'coupon_group',
-    'meta_query' => array(
-      'relation' => 'AND',
-      array(
-        'key' => '_expiry_date',
-        'value' => $today,
-        'compare' => '<'
-      ),
-      array(
-        'key'     => '_is_active',
-        'value'   => '1',
-        'compare' => 'LIKE'
-      )
-    )
-  );
-
-  $expired_coupon_groups = get_posts($args);
-
-  foreach ($expired_coupon_groups as $group) {
-    update_post_meta($group->ID, '_is_active', null);
-  }
-}
-add_action('daily_coupon_group_check', 'check_coupon_groups_expiry');
-
-
-/**
  * Removes coupons from users' sessions when the associated coupon_group is deleted.
  *
  * This function hooks into the delete_post action and is triggered just before
