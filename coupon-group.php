@@ -97,7 +97,7 @@ class CouponGroupPlugin
             'New Group',          // The text to be displayed in the title tags of the page when the menu is selected.
             'New Group',               // The text to be used for the menu.
             'manage_options',                // The capability required for this menu to be displayed to the user.
-            'new_group',        // The slug name to refer to this menu by.
+            'new-group',        // The slug name to refer to this menu by.
             'display_create_or_edit_group_page' // The function to be called to output the content for this page.
         );
         add_action("load-{$new_coupon_group_hook}", array($this, 'new_group_page_assets'));
@@ -119,8 +119,17 @@ class CouponGroupPlugin
             'New Coupon Option',               // Page title
             'New Coupon Option',                     // Menu title
             'manage_woocommerce',             // Capability
-            'create_coupon_coupon',                // Menu slug
-            'display_create_coupon_option_page'  // Callback function
+            'create-coupon-option',                // Menu slug
+            'display_create_or_edit_coupon_option_page'  // Callback function
+        );
+        //Create coupon option submenu
+        add_submenu_page(
+            null,
+            'Edit Coupon Option',               // Page title
+            'Edit Coupon Option',                     // Menu title
+            'manage_woocommerce',             // Capability
+            'edit-coupon-option',                // Menu slug
+            'display_create_or_edit_coupon_option_page'  // Callback function
         );
     }
 

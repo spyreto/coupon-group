@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 /**
  * Handles form submission for creating new coupon custom_coupons.
  */
-function create_coupon_group_handler()
+function create_or_edit_coupon_group_handler()
 {
     // Check if form has been submitted
     if (!isset($_POST['coupon_group_nonce']) && !wp_verify_nonce($_POST['coupon_group_nonce'], 'coupon_group_nonce_action')) {
@@ -72,7 +72,7 @@ function create_coupon_group_handler()
             update_post_meta($post_id, '_wc_coupons', $form_data['wc_coupons'],);
             update_post_meta($post_id, '_custom_coupon_options', $form_data['options'],);
 
-            // Redirect back to form page
+            // Redirect back to overview page
             if ($group_id) {
                 wp_redirect(admin_url('admin.php?page=coupon-group&group_updated=true&group_name=' . $form_data['group_name']));
             } else {
@@ -94,38 +94,52 @@ function create_coupon_group_handler()
         }
     }
 }
-add_action('admin_post_create_coupon_group_handler', 'create_coupon_group_handler');
+add_action('admin_post_create_or_edit_coupon_group_handler', 'create_or_edit_coupon_group_handler');
 
 /**
  * Handles form submission for adding custom coupon. 
  * 
  */
-function new_coupon_option_handler()
+function create_or_edit_coupon_option_handler()
 {
     // Check if form has been submitted
-    if (!wp_verify_nonce($_POST['new_coupon_option_nonce'], 'new_coupon_option_action')) {
+    if (!isset($_POST['coupon_option_nonce']) && !wp_verify_nonce($_POST['coupon_option_nonce'], 'coupon_option_nonce_action')) {
         wp_die('Nonce verification failed.');
     }
 
     try {
+        $option_id = (isset($_POST['option_id']) ? sanitize_text_field($_POST['option_id']) : null);
+
         // Save form data for prepopulated fields
         $form_data = array(
-            'title' => sanitize_text_field($_POST['custom_coupon_title']),
-            'description' => sanitize_textarea_field($_POST['custom_coupon_description'])
+            'title' => sanitize_text_field($_POST['custom_option_title']),
+            'description' => sanitize_textarea_field($_POST['custom_option_description'])
         );
         // Check for empty "Title" field
         is_not_empty($form_data['title'], "The \"Coupon Title\" field is required. Please enter a value.");
-
         $custom_coupon_options = get_option('custom_coupon_options', array());
-        $custom_coupon_options[] = array(
-            'id' => wp_generate_uuid4(),
-            'title' => $form_data['title'],
-            'description' => $form_data['description'],
-        );
 
-
-        update_option('custom_coupon_options', $custom_coupon_options);
-        wp_redirect(admin_url('admin.php?page=coupon-group&option_update=true&option_name='));
+        if (!empty($option_id)) {
+            foreach ($custom_coupon_options as $index => $option) {
+                if ($option['id'] == $option_id) {
+                    $custom_coupon_options[$index]['title'] = $form_data['title'];
+                    $custom_coupon_options[$index]['description'] = $form_data['description'];
+                    break;
+                }
+            }
+            update_option('custom_coupon_options', $custom_coupon_options);
+            // Redirect back to overview page
+            wp_redirect(admin_url('admin.php?page=coupon-group&option_updated=true&option_title=' . $form_data['title']));
+        } else {
+            $custom_coupon_options[] = array(
+                'id' => wp_generate_uuid4(),
+                'title' => $form_data['title'],
+                'description' => $form_data['description'],
+            );
+            update_option('custom_coupon_options', $custom_coupon_options);
+            // Redirect back to overview page
+            wp_redirect(admin_url('admin.php?page=coupon-group&option_created=true&option_title=' . $form_data['title']));
+        }
         exit;
     } catch (Exception $e) {
         set_transient('new_coupon_option_form_error_msg', $e->getMessage(), 45);
@@ -135,4 +149,66 @@ function new_coupon_option_handler()
         wp_redirect(admin_url('admin.php?page=new_coupon_option'));
     }
 }
-add_action('admin_post_new_coupon_option_form_action', 'new_coupon_option_handler');
+add_action('admin_post_create_or_edit_coupon_option_form_action', 'create_or_edit_coupon_option_handler');
+
+
+
+/**
+ * Ηandles the deletion of a coupon group.
+ * 
+ */
+function coupon_group_deletion_handler()
+{
+    if (isset($_GET['action']) && $_GET['action'] === 'delete') {
+        // Check if nonce is set and valid
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete_coupon_group_' . $_GET['group_id'])) {
+            die("Security check failed!");
+        }
+
+        $group_id = $_GET['group_id'];
+        $group_name = get_the_title($group_id);
+
+
+        wp_delete_post($_GET['group_id'], true);  // true means force delete (won't go to trash)
+        wp_redirect(admin_url('admin.php?page=coupon-group&group_deleted=true&group_name=' . $group_name));
+        exit;
+    }
+}
+add_action('admin_init', 'coupon_group_deletion_handler');
+
+
+/**
+ * Ηandles the deletion of a coupon group option.
+ * 
+ */
+function coupon_group_option_deletion_handler()
+{
+    if (isset($_GET['action']) && $_GET['action'] === 'delete-option') {
+        // Check if nonce is set and valid
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete_coupon_group_option_' . $_GET['option_id'])) {
+            die("Security check failed!");
+        }
+
+        $option_id = $_GET['option_id'];
+
+        $indexToRemove = null;
+        $option_title = "";
+        $custom_coupon_options = get_option('custom_coupon_options', array());
+
+        if (!empty($option_id)) {
+            foreach ($custom_coupon_options as $index => $option) {
+                if ($option['id'] == $option_id) {
+                    $indexToRemove = $index;
+                    $option_title = $option['title'];
+                    break;
+                }
+            }
+            unset($custom_coupon_options[$indexToRemove]);
+            update_option('custom_coupon_options', $custom_coupon_options);
+            wp_redirect(admin_url('admin.php?page=coupon-group&option_deleted=true&option_title=' . $option_title));
+        }
+
+        exit;
+    }
+}
+add_action('admin_init', 'coupon_group_option_deletion_handler');

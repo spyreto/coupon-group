@@ -18,152 +18,6 @@ function get_readable_discount_type($type)
     return isset($types[$type]) ? $types[$type] : __('Unknown discount type', 'woocommerce');
 }
 
-/**
- * Displays coupon groups.
- * 
- */
-function display_coupon_groups()
-{
-    // Fetch the coupon groups
-    $args = array(
-        'post_type' => 'coupon_group',
-        'posts_per_page' => -1  // Fetch all groups; modify as per your requirement
-    );
-
-    $query = new WP_Query($args);
-
-    // Check if we have groups
-    if ($query->have_posts()) : ?>
-        <h3>Coupon Groups</h3>
-        <table class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Expire</th>
-                    <th>Is Active</th>
-                    <th>Total Users</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($query->have_posts()) : $query->the_post(); ?>
-                    <?php
-                    // Using get_the_ID()
-                    $group_id = get_the_ID();
-                    $expiry = get_post_meta($group_id, '_expiry_date', true);
-                    $is_active = get_post_meta($group_id, '_is_active', true) == "1" ? "Yes" : "No";
-                    $total_users = get_post_meta($group_id, '_customers', true);
-
-                    // For group deletion
-                    $delete_nonce = wp_create_nonce('delete_coupon_group_' . $group_id);
-                    $delete_link = admin_url('admin.php?page=coupon-group&action=delete&group_id=' .  $group_id . '&_wpnonce=' . $delete_nonce);
-
-                    ?>
-                    <tr>
-                        <td><?php the_ID(); ?></td>
-                        <td><?php the_title(); ?></td>
-                        <td><?php echo esc_html($expiry); ?></td>
-                        <td><?php echo esc_html($is_active); ?></td>
-                        <td><?php echo is_array($total_users) ? count($total_users) : "0"; ?></td>
-                        <td>
-                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>">Edit</a>
-                            <span>|</span>
-                            <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo $group_id ?>">Delete</a>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-
-    <?php
-        // Reset the global $post object
-        wp_reset_postdata();
-    else :
-    ?>
-        <p>No coupon groups found.</p>
-    <?php
-    endif;
-}
-
-/**
- * Displays custom coupon options.
- * 
- */
-function display_coupon_options()
-{
-    $custom_coupon_options = get_option('custom_coupon_options', array());
-
-    ?>
-    <h3>Custom Coupon Option</h3>
-    <table class="wp-list-table widefat fixed striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-
-            <?php
-            if (!empty($custom_coupon_options)) {
-                foreach ($custom_coupon_options as $option) {
-                    // For group deletion
-                    $delete_nonce = wp_create_nonce('delete_coupon_group_' . '$group_id');
-                    $delete_link = admin_url('admin.php?page=coupon-group&action=delete&group_id=' .  '$group_id' . '&_wpnonce=' . $delete_nonce);
-
-            ?>
-                    <tr>
-                        <td><?php echo esc_html($option['title']) ?></td>
-                        <td><?php echo esc_html($option['description']) ?></td>
-                        <td>
-                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . '$group_id') ?>">Edit</a>
-                            <span>|</span>
-                            <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo '$group_id' ?>">Delete</a>
-                        </td>
-                        <td></td>
-                    </tr>
-                <?php
-                }
-            } else {
-                ?>
-                <tr>
-                    <p>No custom coupon options found.</p>
-                </tr>
-            <?php
-            }
-            ?>
-
-        </tbody>
-    </table>
-
-<?php
-}
-
-/**
- * Ηandles the deletion of a coupon group.
- * 
- */
-function coupon_group_deletion_handler()
-{
-    if (isset($_GET['action']) && $_GET['action'] === 'delete') {
-        // Check if nonce is set and valid
-        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete_coupon_group_' . $_GET['group_id'])) {
-            die("Security check failed!");
-        }
-
-        $group_id = $_GET['group_id'];
-        $group_name = get_the_title($group_id);
-
-
-        wp_delete_post($_GET['group_id'], true);  // true means force delete (won't go to trash)
-        wp_redirect(admin_url('admin.php?page=coupon-group&group_deleted=true&group_name=' . $group_name));
-        exit;
-    }
-}
-add_action('admin_init', 'coupon_group_deletion_handler');
-
 
 /**
  * Check if the provided date is valid and not a past date.
@@ -319,4 +173,22 @@ function filter_posts_where_date_comparison($where)
     global $wpdb;
     $where .= " AND STR_TO_DATE({$wpdb->postmeta}.meta_value, '%d-%m-%Y') < CURDATE()";
     return $where;
+}
+
+/**
+ * Searches through custom coupon options to find the option where the 'id' key matches the given $id.
+ * 
+ * @param string $id The ID to search for.
+ * @return array|null Returns the sub-array option with the matching ID or null if no matching ID is found.
+ * 
+ */
+function find_coupon_option_by_id($id)
+{
+    $available_options = get_option('custom_coupon_options', array());
+    foreach ($available_options as $option) {
+        if (isset($option['id']) && $option['id'] == $id) {
+            return $option;
+        }
+    }
+    return null; // Return null if no element is found with the given id
 }
