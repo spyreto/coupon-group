@@ -145,7 +145,13 @@ img {
 }
 
 .admin-cg-fieldset div {
-  margin-left: 1.6em;
+  padding-top: 1.6em;
+}
+
+.admin-cg-fieldset a {
+  display: inline-block;
+  margin-top: 1.8em;
+  font-size: 1.2em;
 }
 
 .sm-form-field {

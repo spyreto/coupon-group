@@ -217,6 +217,7 @@ function display_create_or_edit_group_page()
                             <?php
                             }
                             ?>
+                            <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>">Create Coupon Group Option</a>
                         </div>
 
                         <!-- Sents group id in order to update the group -->
@@ -304,6 +305,7 @@ function display_create_or_edit_group_page()
                         <?php
                         }
                         ?>
+                        <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>">Create Coupon Group Option</a>
                     </div>
 
                     <input type="hidden" name="create_coupon_group_submitted" value="true">
