@@ -70,6 +70,7 @@ class CouponGroupPlugin
      */
     function menu()
     {
+
         add_menu_page(
             'Overview',         // Page title
             'Coupon Group',     // Menu title

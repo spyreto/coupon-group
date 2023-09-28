@@ -32,6 +32,14 @@ Main color shade: #9775fa
 Background color: #f8f9fa
 */
 
+img {
+  fill: red;
+}
+
+.wp-menu-image svg {
+  fill: red;
+}
+
 .admin-cg-wrap {
   font-size: 10px;
   line-height: 1;
@@ -150,4 +158,17 @@ Background color: #f8f9fa
 
 .l-form-field {
   max-width: 26em;
+}
+
+.admin-cg-no-found-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4.8em;
+}
+
+.admin-cg-no-found-wrap p {
+  font-size: 1.4em;
+  color: #1d2327;
 }
