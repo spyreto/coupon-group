@@ -32,6 +32,17 @@ Main color shade: #9775fa
 Background color: #f8f9fa
 */
 
+@keyframes fadeIn {
+  from {
+    opacity: 0; /* Start fully transparent */
+    transform: translateY(-20px); /* Start 20px above the final position */
+  }
+  to {
+    opacity: 1; /* End fully opaque */
+    transform: translateY(0); /* End in the final position */
+  }
+}
+
 img {
   fill: red;
 }
@@ -41,6 +52,7 @@ img {
 }
 
 .admin-cg-wrap {
+  position: relative;
   font-size: 10px;
   line-height: 1;
   font-weight: 400;
@@ -75,12 +87,22 @@ img {
   display: flex;
   align-items: center;
   margin-top: 1.6em;
+  margin-bottom: 2em;
+  flex-wrap: wrap;
 }
 
 .admin-cg-form-checkbox label {
   font-size: 1.4em;
   margin-right: 0.8em;
   padding: 0.6em 0;
+}
+
+.admin-cg-input-info {
+  font-size: 1.2em;
+  font-weight: 400;
+  color: #868e96;
+  width: 100%;
+  text-wrap: wrap;
 }
 
 .admin-cg-form-field label {
@@ -91,6 +113,10 @@ img {
 .admin-cg-form-checkbox input,
 .admin-cg-form-field input {
   font-size: 1.4em;
+}
+
+.admin-cg-form-field input {
+  margin-bottom: 0.6em;
 }
 
 .admin-cg-form-checkbox-option {
@@ -142,7 +168,7 @@ img {
   font-size: 1.8em;
   font-weight: 400;
   margin-top: 0;
-  margin-bottom: 1.8em;
+  margin-bottom: 0.8em;
 }
 
 .admin-cg-fieldset div {
@@ -197,4 +223,98 @@ img {
   color: #1d2327;
   border-color: #1d2327;
   cursor: pointer;
+}
+
+.admin-cg-empty-table-cell {
+  text-align: center;
+}
+
+.admin-cg-delete-confirmation-box {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 22em;
+  position: fixed;
+  z-index: 10;
+
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centers the div */
+
+  padding: 1.2em;
+  background-color: #fff;
+  border: 0.1em solid #aaa;
+  border-radius: 0.4em;
+  box-shadow: 0em 0.2em 0.4em #aaa;
+
+  animation: fadeIn 0.8s forwards;
+}
+
+.admin-cg-delete-confirmation-box p {
+  text-wrap: wrap;
+  text-align: center;
+  font-size: 1.4em;
+  margin: 0 0 1.2em 0;
+}
+
+.admin-cg-delete-confirmation-box button {
+  border: 0.1em solid #aaa;
+  border-radius: 0.3em;
+  padding: 0.4em 1em; /* Remove padding */
+  cursor: pointer; /* Keep the hand cursor on hover */
+
+  font-size: 1.3em;
+  cursor: pointer;
+}
+
+.admin-cg-delete-confirmation-box button:first-child {
+  margin-right: 1em;
+}
+
+button.admin-cg-button-primary {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #f6f7f7;
+}
+
+button.admin-cg-button-primary:hover {
+  background: #135e96;
+  border-color: #135e96;
+  color: #f6f7f7;
+}
+
+button.admin-cg-button-secondary {
+  background: #868e96;
+  border-color: #868e96;
+  color: #f6f7f7;
+}
+
+button.admin-cg-button-secondary:hover {
+  background: #495057;
+  border-color: #495057;
+  color: #f6f7f7;
+}
+
+button.admin-cg-button-danger {
+  background: #f03e3e;
+  border-color: #f03e3e;
+  color: #f6f7f7;
+}
+
+button.admin-cg-button-danger:hover {
+  background: #e03131;
+  border-color: #e03131;
+  color: #f6f7f7;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.2); /* Black background with 50% opacity */
+  display: none; /* Initially hidden */
+  z-index: 5; /* Ensure the overlay is above other elements */
 }

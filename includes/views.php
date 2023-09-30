@@ -6,9 +6,9 @@
  */
 function overview_page()
 {
-
 ?>
-    <div class="wrap">
+    <div class="admin-cg-wrap">
+        <div id="overlay"></div>
         <?php
         if (isset($_GET['group_deleted']) == 'true') {
         ?>
@@ -49,11 +49,29 @@ function overview_page()
         }
         ?>
         <h1>Coupon Group</h1>
-        <h4>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h4>
+        <h2>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h2>
         <?php
+        'display_delete_confirmation_box'();
         'display_coupon_groups'();
         'display_coupon_options'();
         ?>
+    </div>
+<?php
+}
+
+/**
+ * Displays coupon groups.
+ * 
+ */
+function display_delete_confirmation_box()
+{
+?>
+    <div class="admin-cg-delete-confirmation-box">
+        <p>Are you sure that you want to delete <strong class="admin-cg-delete-item-type"></strong> with name <strong class="admin-cg-delete-item-name"></strong></p>
+        <div>
+            <button data-action='cancel' class="admin-cg-button-secondary">Cancel</button>
+            <button data-action='delete' class="admin-cg-button-danger">Delete</button>
+        </div>
     </div>
     <?php
 }
@@ -187,15 +205,17 @@ function display_create_or_edit_group_page()
                         </div>
 
                         <!-- Expiry Date -->
-                        <div class="admin-cg-form-field sm-form-field">
+                        <div class="admin-cg-form-field">
                             <label for="expiry_date">Expiry Date</label>
-                            <input type="text" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr(isset($form_data['expiry_date']) ? $form_data['expiry_date'] : ($old_coupon_group->expiry_date ?? '')); ?>">
+                            <input type="text" name="expiry_date" id="expiry_date" class="date-picker sm-form-field" autocomplete="off" value="<?php echo esc_attr(isset($form_data['expiry_date']) ? $form_data['expiry_date'] : ($old_coupon_group->expiry_date ?? '')); ?>">
+                            <span class="admin-cg-input-info">End date of the Coupon Group. If it is empty the group never expires.</span>
                         </div>
 
                         <!-- Is Active -->
                         <div class="admin-cg-form-checkbox">
                             <label for="is_active">Is active:</label>
                             <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : checked($old_coupon_group->is_active, 1) ?> />
+                            <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
                         </div>
 
                         <!-- Group options -->
@@ -271,15 +291,17 @@ function display_create_or_edit_group_page()
                     </div>
 
                     <!-- Expiry Date -->
-                    <div class="admin-cg-form-field sm-form-field">
+                    <div class="admin-cg-form-field">
                         <label for="expiry_date">Expiry Date</label>
-                        <input type="text" name="expiry_date" id="expiry_date" class="date-picker" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ""); ?>">
+                        <input type="text" name="expiry_date" id="expiry_date" class="date-picker sm-form-field" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ""); ?>">
+                        <span class="admin-cg-input-info">End date of the Coupon Group. If it is empty the group never expires.</span>
                     </div>
 
                     <!-- Is Active -->
                     <div class="admin-cg-form-checkbox">
                         <label for="is_active">Is active:</label>
                         <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['_is_active']) ? checked($form_data['_is_active'], 1) : ""; ?> />
+                        <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
                     </div>
 
                     <!-- Group options -->
@@ -423,23 +445,25 @@ function display_coupon_groups()
 
     $query = new WP_Query($args);
 
-    // Check if we have groups
-    if ($query->have_posts()) : ?>
-        <h3>Coupon Groups</h3>
-        <table class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Expire</th>
-                    <th>Is Active</th>
-                    <th>Total Users</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($query->have_posts()) : $query->the_post(); ?>
-                    <?php
+    ?>
+    <h3>Coupon Groups</h3>
+    <table class="wp-list-table widefat fixed striped">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Expire</th>
+                <th>Is Active</th>
+                <th>Total Users</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($query->have_posts()) {
+                while ($query->have_posts()) : $query->the_post();
+
                     // Using get_the_ID()
                     $group_id = get_the_ID();
                     $expiry = get_post_meta($group_id, '_expiry_date', true);
@@ -450,7 +474,7 @@ function display_coupon_groups()
                     $delete_nonce = wp_create_nonce('delete_coupon_group_' . $group_id);
                     $delete_link = admin_url('admin.php?page=coupon-group&action=delete&group_id=' .  $group_id . '&_wpnonce=' . $delete_nonce);
 
-                    ?>
+            ?>
                     <tr>
                         <td><?php the_ID(); ?></td>
                         <td><?php the_title(); ?></td>
@@ -460,21 +484,24 @@ function display_coupon_groups()
                         <td>
                             <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>">Edit</a>
                             <span>|</span>
-                            <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo $group_id ?>">Delete</a>
+                            <a class="admin-cg-delete-link" data-name="<?php echo the_title(); ?>" data-type="Coupon Group" href="<?php echo $delete_link ?>">Delete</a>
                         </td>
                     </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-
-    <?php
-        // Reset the global $post object
-        wp_reset_postdata();
-    else :
-    ?>
-        <p>No coupon groups found.</p>
-    <?php
-    endif;
+                <?php
+                endwhile;
+                // Reset the global $post object
+                wp_reset_postdata();
+            } else {
+                ?>
+                <tr>
+                    <td class="admin-cg-empty-table-cell" colspan='6'>No Coupon Groups found.</td>
+                </tr>
+            <?php
+            }
+            ?>
+        </tbody>
+    </table>
+<?php
 }
 
 /**
@@ -485,7 +512,7 @@ function display_coupon_options()
 {
     $custom_coupon_options = get_option('custom_coupon_options', array());
 
-    ?>
+?>
     <h3>Custom Coupon Options</h3>
     <table class="wp-list-table widefat fixed striped">
         <thead>
@@ -511,7 +538,7 @@ function display_coupon_options()
                         <td>
                             <a href="<?php echo admin_url('admin.php?page=edit-coupon-option&option_id=' . $option['id']) ?>">Edit</a>
                             <span>|</span>
-                            <a href="<?php echo $delete_link ?>" class="delete-coupon-group" data-group-id="<?php echo $option['id'] ?>">Delete</a>
+                            <a class="admin-cg-delete-link" data-name="<?php echo $option['title']; ?>" data-type="Coupon Group Option" href="<?php echo $delete_link ?>" data-name="<?php echo the_title(); ?>">Delete</a>
                         </td>
                         <td></td>
                     </tr>
@@ -520,7 +547,7 @@ function display_coupon_options()
             } else {
                 ?>
                 <tr>
-                    <p>No custom coupon options found.</p>
+                    <td class="admin-cg-empty-table-cell" colspan='3'>No custom coupon options found.</td>
                 </tr>
             <?php
             }

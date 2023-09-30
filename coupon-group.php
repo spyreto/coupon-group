@@ -34,6 +34,14 @@ require_once plugin_dir_path(__FILE__) . 'includes/views.php';
 
 include_once plugin_dir_path(__FILE__) . 'includes/order-page-view.php';
 
+// Plugin pages ids
+define('COUPON_GROUP_PAGES', array(
+    'toplevel_page_coupon-group',
+    'admin_page_edit-coupon-group',
+    'admin_page_edit-coupon-option',
+    'coupon-group_page_new-group',
+    'coupon-group_page_create-coupon-option'
+));
 
 class CouponGroupPlugin
 {
@@ -51,6 +59,8 @@ class CouponGroupPlugin
     {
         //Custom style
         wp_enqueue_style('coupon-group', plugins_url('assets/css/coupon-group.css', __FILE__));
+        // Main script
+        wp_enqueue_script('coupon-group', plugins_url('assets/js/coupon-group.js', __FILE__));
     }
 
     /**
@@ -153,7 +163,7 @@ class CouponGroupPlugin
         wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
         wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
 
-        wp_enqueue_script('create-coupon-group', plugins_url('assets/js/create-coupon-group.js', __FILE__));
+        wp_enqueue_script('create-coupon-group-page', plugins_url('assets/js/create-coupon-group-page.js', __FILE__));
 
         //Custom Select2 style
         wp_enqueue_style('select2-custom-style', plugins_url('assets/css/select2-custom-style.css', __FILE__));
