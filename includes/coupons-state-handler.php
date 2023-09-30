@@ -386,7 +386,7 @@ function my_custom_cart_section()
       // Each $option is an associative array with 'id' and 'value' keys.
       if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == 1) {
 ?>
-        <tr class="my-custom-section">
+        <tr>
           <th><?php echo $available_option['title'] ?></th>
           <td><?php echo $available_option['description'] ?></td>
         </tr>

@@ -32,6 +32,9 @@ require_once plugin_dir_path(__FILE__) . 'includes/coupons-state-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/cron-tasks.php';
 require_once plugin_dir_path(__FILE__) . 'includes/views.php';
 
+include_once plugin_dir_path(__FILE__) . 'includes/order-page-view.php';
+
+
 class CouponGroupPlugin
 {
     function __construct()
