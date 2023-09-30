@@ -30,15 +30,18 @@ function create_or_edit_coupon_group_handler()
             'options' => array(),
         );
 
+        // Check for empty Coupon Group name
+        is_not_empty($form_data['group_name'], "The \"Coupon Group Name\" field is required. Please enter a value.");
+
+        // Validating the form data       
+        $expiry_date = is_valid_expiry_date($form_data['expiry_date'], $form_data['is_active']);
+
         $available_options = get_option('custom_coupon_options', array());
 
         foreach ($available_options as $option) {
             $form_data['options'][$option['id']] = (isset($_POST[$option['id']]) ?
                 sanitize_text_field($_POST[$option['id']]) : null);
         }
-
-        // Validating the form data       
-        $expiry_date = is_valid_expiry_date($form_data['expiry_date'], $form_data['is_active']);
 
         $post_id = null;
 
@@ -90,7 +93,7 @@ function create_or_edit_coupon_group_handler()
         if ($group_id) {
             wp_redirect(admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id));
         } else {
-            wp_redirect(admin_url('admin.php?page=new_group'));
+            wp_redirect(admin_url('admin.php?page=new-group'));
         }
     }
 }

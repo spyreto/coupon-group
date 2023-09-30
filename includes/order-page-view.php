@@ -29,7 +29,7 @@ function display_coupon_group_options_after_shipping($order_id)
         if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == 1) {
       ?>
           <tr>
-            <td class=" label"><?php ?>
+            <td class="label"><?php ?>
             </td>
             <td width="1%"></td>
             <td class="total"><bdi>

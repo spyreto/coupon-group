@@ -130,7 +130,7 @@ function display_create_or_edit_group_page()
                         <!-- Group Name -->
                         <div class="admin-cg-form-field sm-form-field">
                             <label for="group_name">Group Name</label>
-                            <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ($old_coupon_group->name  ?? '')); ?>">
+                            <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ($old_coupon_group->name  ?? '')); ?>" required>
                         </div>
 
                         <!-- WooCommerce Coupons -->
@@ -242,7 +242,7 @@ function display_create_or_edit_group_page()
                     <!-- Group Name -->
                     <div class="admin-cg-form-field sm-form-field">
                         <label for="group_name">Group Name</label>
-                        <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ''); ?>">
+                        <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ''); ?>" required>
                     </div>
 
                     <!-- WooCommerce Coupons -->
