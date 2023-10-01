@@ -115,6 +115,29 @@ function is_coupon_part_of_group($coupon_id)
 }
 
 /**
+ * Retrieve coupon groups where a specific coupon is included.
+ *
+ * @param int Coupon Code.
+ * @return array List of WP_Post objects representing the coupon groups.
+ */
+function get_active_coupon_groups_for_coupon($coupon)
+{
+    // Check if the coupon is associated with any Coupon Group.
+    $args = array(
+        'post_type'  => 'coupon_group', // Your Coupon Group CPT
+        'meta_query' => array(
+            array(
+                'key'     => '_wc_coupons', // Adjust with your actual meta key for coupons
+                'value'   => $coupon,
+                'compare' => 'LIKE',
+            ),
+        ),
+    );
+    return get_posts($args);
+}
+
+
+/**
  * Retrieve coupon groups where a specific user is included.
  *
  * @param int $user_id The ID of the user.

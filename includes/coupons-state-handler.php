@@ -397,3 +397,46 @@ function my_custom_cart_section()
 }
 add_action('woocommerce_cart_totals_before_shipping', 'my_custom_cart_section');
 add_action('woocommerce_review_order_before_shipping', 'my_custom_cart_section');
+
+
+/**
+ * Validates whether a coupon can be applied by a user.
+ * 
+ * @param bool $is_valid Whether the coupon is valid.
+ * @param WC_Coupon $coupon The coupon object.
+ * 
+ * @return bool Whether the coupon is valid.
+ */
+function validate_coupon_for_user_group($is_valid, $coupon)
+{
+  // If the coupon is already invalid, no need to check further.
+  if (!$is_valid) {
+    return false;
+  }
+  $coupon_id = $coupon->get_id();
+  $associated_coupon_groups = get_active_coupon_groups_for_coupon($coupon_id);
+
+  if (empty($associated_coupon_groups)) {
+    return $is_valid; // This coupon is not associated with any group, so it remains valid.
+  } else {
+    // Get the current user ID.
+    $user_id = get_current_user_id();
+    // If the user is not logged in, invalidate the coupon.
+    if ($user_id === 0) {
+      throw new Exception(__('You must be logged in to use this coupon.', 'coupon-group'));
+    }
+    foreach ($associated_coupon_groups as $coupon_group) {
+      $group_members = get_post_meta($coupon_group->ID, '_customers', true);
+      if (in_array($user_id, $group_members)) {
+        return $is_valid;
+      }
+    }
+  }
+
+  // Reset the post data after the custom query.
+  wp_reset_postdata();
+
+  // The user is not a member of any group associated with this coupon, invalidate it.
+  throw new Exception(__('You must be member of a Coupon Group to use this coupon.', 'coupon-group'));
+}
+add_filter('woocommerce_coupon_is_valid', 'validate_coupon_for_user_group', 10, 2);
