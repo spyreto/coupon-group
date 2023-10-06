@@ -96,6 +96,7 @@ function display_create_or_edit_group_page()
         $old_coupon_group->expiry_date = get_post_meta($group_id, '_expiry_date', true);
         $old_coupon_group->customers = get_post_meta($group_id, '_customers', true);
         $old_coupon_group->is_active = get_post_meta($group_id, '_is_active', true);
+        $old_coupon_group->unlimited_use = get_post_meta($group_id, '_unlimited_use', true);
 
         // Get the saved meta values (if they exist).
         $old_coupon_group->options = get_post_meta($group_id, '_custom_coupon_options', true);
@@ -218,6 +219,13 @@ function display_create_or_edit_group_page()
                             <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
                         </div>
 
+                        <!-- Unlimited Use -->
+                        <div class="admin-cg-form-checkbox">
+                            <label for="unlimited_use">Unlimited Use:</label>
+                            <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['is_active']) ? checked($form_data['unlimited_use'], 1) : checked($old_coupon_group->unlimited_use, 1) ?> />
+                            <span class="admin-cg-input-info">Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).</span>
+                        </div>
+
                         <!-- Group options -->
                         <div class="admin-cg-fieldset">
                             <h3>Coupon Group Options</h3>
@@ -300,8 +308,15 @@ function display_create_or_edit_group_page()
                     <!-- Is Active -->
                     <div class="admin-cg-form-checkbox">
                         <label for="is_active">Is active:</label>
-                        <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['_is_active']) ? checked($form_data['_is_active'], 1) : ""; ?> />
+                        <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : ""; ?> />
                         <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
+                    </div>
+
+                    <!-- Unlimited Use -->
+                    <div class="admin-cg-form-checkbox">
+                        <label for="unlimited_use">Unlimited Use:</label>
+                        <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['unlimited_use']) ? checked($form_data['unlimited_use'], 1) : ""; ?> />
+                        <span class="admin-cg-input-info">Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).</span>
                     </div>
 
                     <!-- Group options -->

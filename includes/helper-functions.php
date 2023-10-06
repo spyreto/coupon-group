@@ -215,3 +215,34 @@ function find_coupon_option_by_id($id)
     }
     return null; // Return null if no element is found with the given id
 }
+
+
+
+/**
+ * Get an array of unique wc_coupons from an array of coupon groups.
+ * 
+ * @param array $coupon_group An array of coupon groups for the 'coupon_group' CPT.
+ * @return array An array of unique 'wc_coupons' extracted from the given 'coupon_group' CPTs.
+ */
+function get_unique_wc_coupons_from_groups($coupon_groups)
+{
+    // Initialize an empty array to store wc_coupons.
+    $all_wc_coupons = array();
+
+    // Loop through each coupon_group ID.
+    foreach ($coupon_groups as $coupon_group) {
+        // Retrieve the _wc_coupons meta from the current coupon_group.
+        $wc_coupons = get_post_meta($coupon_group->ID, '_wc_coupons', true);
+
+        // Check if the meta value is an array and is not empty.
+        if (is_array($wc_coupons) && !empty($wc_coupons)) {
+            // Merge the retrieved wc_coupons into the main array.
+            $all_wc_coupons = array_merge($all_wc_coupons, $wc_coupons);
+        }
+    }
+
+    // Remove duplicates from the all_wc_coupons array.
+    $all_wc_coupons = array_unique($all_wc_coupons);
+
+    return $all_wc_coupons;
+}

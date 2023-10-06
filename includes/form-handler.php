@@ -27,6 +27,7 @@ function create_or_edit_coupon_group_handler()
                 && is_array($_POST['customers']))
                 ? array_map('sanitize_text_field', $_POST['customers']) : array(),
             'is_active' => (isset($_POST['is_active']) ? sanitize_text_field($_POST['is_active']) : null),
+            'unlimited_use' => (isset($_POST['unlimited_use']) ? sanitize_text_field($_POST['unlimited_use']) : null),
             'options' => array(),
         );
 
@@ -70,6 +71,7 @@ function create_or_edit_coupon_group_handler()
         if ($post_id) {
             // Save additional data as post meta
             update_post_meta($post_id, '_is_active', $form_data['is_active'],);
+            update_post_meta($post_id, '_unlimited_use', $form_data['unlimited_use'],);
             update_post_meta($post_id, '_expiry_date', $expiry_date,);
             update_post_meta($post_id, '_customers', $form_data['customers'],);
             update_post_meta($post_id, '_wc_coupons', $form_data['wc_coupons'],);

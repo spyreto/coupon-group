@@ -136,7 +136,7 @@ function check_flagged_coupons()
   }
 
   $user_id = get_current_user_id();
-  $applied_coupons = WC()->session->get('applied_coupons') !== null ? WC()->session->get('applied_coupons') : '';
+  $applied_coupons = WC()->session->get('applied_coupons') !== null ? WC()->session->get('applied_coupons') : array();
   $cart = WC()->cart;
 
   $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true) !== '' ?
@@ -369,7 +369,7 @@ add_filter('woocommerce_coupon_message', 'custom_coupon_message', 10, 3);
 
 
 
-function my_custom_cart_section()
+function display_coupon_group_options()
 {
   if (!is_user_logged_in() || current_user_can('manage_options')) {
     return;
@@ -395,8 +395,8 @@ function my_custom_cart_section()
     }
   }
 }
-add_action('woocommerce_cart_totals_before_shipping', 'my_custom_cart_section');
-add_action('woocommerce_review_order_before_shipping', 'my_custom_cart_section');
+add_action('woocommerce_cart_totals_before_shipping', 'display_coupon_group_options');
+add_action('woocommerce_review_order_before_shipping', 'display_coupon_group_options');
 
 
 /**
@@ -440,3 +440,46 @@ function validate_coupon_for_user_group($is_valid, $coupon)
   throw new Exception(__('You must be member of a Coupon Group to use this coupon.', 'coupon-group'));
 }
 add_filter('woocommerce_coupon_is_valid', 'validate_coupon_for_user_group', 10, 2);
+
+
+/**
+ * Reapply coupons or removes the group options based on the type of use of a coupon group.
+ * 
+ * @param int $order_id Order id.
+ * 
+ */
+function reapply_coupons_on_unlimited_use($order_id)
+{
+  // Check if order_id is non-empty
+  if (!$order_id)
+    return;
+
+  // Get the order object
+  $order = wc_get_order($order_id);
+
+  // Get the user ID from the order
+  $user_id = $order->get_user_id(); // Get the ID of the user who placed the order
+
+  // Check if user_id is non-empty
+  if (!$user_id)
+    return;
+
+  $active_user_groups =  get_active_coupon_groups_for_user($user_id);
+
+  foreach ($active_user_groups as $active_group) {
+    $unlimited_use = get_post_meta($active_group->ID, "_unlimited_use", true) == '1';
+
+    // Check if the coupon group is unlimited use
+    if (!$unlimited_use) {
+      // set the couponsgroup to inactive
+      remove_coupons_from_users($active_group->ID, array($user_id));
+    } else {
+      $group_coupons = get_unique_wc_coupons_from_groups($active_user_groups);
+      foreach ($group_coupons as $coupon) {
+        // Reapply the coupons
+        flag_coupon_for_addition($user_id, $coupon);
+      }
+    }
+  }
+}
+add_action('woocommerce_thankyou', 'reapply_coupons_on_unlimited_use', 10, 1);
