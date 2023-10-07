@@ -383,6 +383,7 @@ function display_coupon_group_options()
   $coupon_groups = get_active_coupon_groups_for_user($user_id);
   $available_options = get_option('custom_coupon_options', array());
 
+  // Check if there are any coupon groups
   foreach ($coupon_groups as $coupon_group) {
     $group_options = get_post_meta($coupon_group->ID, '_custom_coupon_options', true);
 
@@ -399,8 +400,12 @@ function display_coupon_group_options()
     }
   }
 }
+// Display the coupon group options in the cart and checkout pages
 add_action('woocommerce_cart_totals_before_shipping', 'display_coupon_group_options');
 add_action('woocommerce_review_order_before_shipping', 'display_coupon_group_options');
+
+// Display the coupon group options in the order details page
+add_action('woocommerce_order_details_after_order_table_items', 'display_coupon_group_options');
 
 
 /**
@@ -454,6 +459,7 @@ add_filter('woocommerce_coupon_is_valid', 'validate_coupon_for_user_group', 10, 
  */
 function reapply_coupons_on_unlimited_use($order_id)
 {
+
   // Check if order_id is non-empty
   if (!$order_id)
     return;
@@ -471,6 +477,7 @@ function reapply_coupons_on_unlimited_use($order_id)
   // Get the active coupon groups for the user
   $active_user_groups =  get_active_coupon_groups_for_user($user_id);
 
+  error_log('liko');
   foreach ($active_user_groups as $active_group) {
     $unlimited_use = get_post_meta($active_group->ID, "_unlimited_use", true) == '1';
 
@@ -479,9 +486,10 @@ function reapply_coupons_on_unlimited_use($order_id)
       // set the couponsgroup to inactive
       remove_coupons_from_users($active_group->ID, array($user_id));
     } else {
+      // Get the unique coupons from the groups
       $group_coupons = get_unique_wc_coupons_from_groups($active_user_groups);
+      // Reapply the coupons
       foreach ($group_coupons as $coupon) {
-        // Reapply the coupons
         flag_coupon_for_addition($user_id, $coupon);
       }
     }
