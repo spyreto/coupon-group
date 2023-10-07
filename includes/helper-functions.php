@@ -159,6 +159,26 @@ function get_active_coupon_groups_for_user($user_id)
                 'key'     => '_is_active',
                 'value'   => '1',
                 'compare' => 'LIKE'
+            ), array(
+                'relation' => 'OR',
+                array(
+                    'key'     => '_unlimited_use',
+                    'value'   => '1',
+                    'compare' => 'LIKE'  // Check if _unlimited_use is set to 1
+                ),
+                array(
+                    'relation' => 'AND',
+                    array(
+                        'key'     => '_unlimited_use',
+                        'value'   => '0',
+                        'compare' => 'LIKE'  // Check if _unlimited_use is set to 1
+                    ),
+                    array(
+                        'key'     => '_used_by',
+                        'value'   => '"' . $user_id . '"',  // Searching for serialized array.
+                        'compare' => 'NOT LIKE'
+                    )
+                )
             )
         )
     );
@@ -245,4 +265,38 @@ function get_unique_wc_coupons_from_groups($coupon_groups)
     $all_wc_coupons = array_unique($all_wc_coupons);
 
     return $all_wc_coupons;
+}
+
+
+/**
+ * Update coupon group user usage metadata.
+ *
+ * This function adds or updates metadata for a coupon group to keep track of which users
+ * have used the group and how many times it has been used.
+ *
+ * @param int $group_id The ID of the coupon group.
+ * @param int $user_id The ID of the user who used the coupon group.
+ */
+function update_coupon_group_user_usage($group_id, $user_id)
+{
+    // Retrieve the existing users who have used this group.
+    $existing_users = get_post_meta($group_id, '_used_by', true);
+
+    if (empty($existing_users) || !is_array($existing_users)) {
+        $existing_users = array();
+    }
+
+    // Check if the user has already used this group.
+    if (!in_array($user_id, $existing_users)) {
+        $existing_users[] = $user_id;
+        update_post_meta($group_id, '_used_by', $existing_users);
+
+        // Increase the usage count if needed.
+        $usage_count = get_post_meta($group_id, '_usage_count', true);
+        if (empty($usage_count)) {
+            $usage_count = 0;
+        }
+        $usage_count++;
+        update_post_meta($group_id, '_usage_count', $usage_count);
+    }
 }

@@ -131,19 +131,23 @@ function flag_coupon_for_addition($user_id, $coupon_id)
  */
 function check_flagged_coupons()
 {
+  // Check if the user is logged in and is not an admin
   if (!is_user_logged_in() || current_user_can('manage_options')) {
     return;
   }
+  // Get the cart object
+  $cart = WC()->cart;
 
   $user_id = get_current_user_id();
+  // Get the coupons that are currently applied to the cart
   $applied_coupons = WC()->session->get('applied_coupons') !== null ? WC()->session->get('applied_coupons') : array();
-  $cart = WC()->cart;
 
   $coupons_to_add = get_user_meta($user_id, '_coupons_to_add', true) !== '' ?
     get_user_meta($user_id, '_coupons_to_add', true) : array();
   $coupons_to_remove = get_user_meta($user_id, '_coupons_to_remove', true) !== '' ?
     get_user_meta($user_id, '_coupons_to_remove', true) : array();
 
+  // Check if there are any coupons to add or remove
   if (empty($coupons_to_add) && empty($coupons_to_remove)) {
     return;
   } elseif (!empty($coupons_to_add) && empty($coupons_to_remove)) {
@@ -204,14 +208,14 @@ function handle_coupon_group_update($meta_id, $object_id, $meta_key, $meta_value
   if (get_post_type($object_id) !== 'coupon_group') {
     return;
   }
-
+  // Get the old value
   global $before_update_coupon_group;
 
   switch ($meta_key) {
     case "_is_active":
       $is_activated = $meta_value;
       // Activation or deactivation logic
-      if ($is_activated) {  // If activated
+      if ($is_activated == '1') {  // If activated
         add_coupons_to_users($meta_id, $object_id);
       } else {  // If deactivated
         remove_coupons_from_users($object_id);
@@ -255,7 +259,6 @@ function handle_coupon_group_update($meta_id, $object_id, $meta_key, $meta_value
       }
       break;
     default:
-      echo "I don't know you!";
       break;
   }
 }
@@ -371,6 +374,7 @@ add_filter('woocommerce_coupon_message', 'custom_coupon_message', 10, 3);
 
 function display_coupon_group_options()
 {
+  // Check if the user is logged in and is not an admin
   if (!is_user_logged_in() || current_user_can('manage_options')) {
     return;
   }
@@ -464,6 +468,7 @@ function reapply_coupons_on_unlimited_use($order_id)
   if (!$user_id)
     return;
 
+  // Get the active coupon groups for the user
   $active_user_groups =  get_active_coupon_groups_for_user($user_id);
 
   foreach ($active_user_groups as $active_group) {
@@ -483,3 +488,23 @@ function reapply_coupons_on_unlimited_use($order_id)
   }
 }
 add_action('woocommerce_thankyou', 'reapply_coupons_on_unlimited_use', 10, 1);
+
+// Reaply coupoons on customer login
+function reapply_coupons_on_customer_login($user_login, $user)
+{
+  // Check if user is admin
+  if (current_user_can('manage_options')) return;
+
+  // Get the active coupon groups for the user
+  $active_user_groups =  get_active_coupon_groups_for_user($user->ID);
+
+  // Get the unique coupons from the groups
+  $group_coupons = get_unique_wc_coupons_from_groups($active_user_groups);
+  // Reapply the coupons
+  foreach ($group_coupons as $coupon) {
+    // Reapply the coupons
+    flag_coupon_for_addition($user->ID, $coupon);
+  }
+}
+
+add_action('wp_login', 'reapply_coupons_on_customer_login', 10, 2);

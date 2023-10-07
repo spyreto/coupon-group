@@ -26,8 +26,8 @@ function create_or_edit_coupon_group_handler()
             'customers' => (isset($_POST['customers'])
                 && is_array($_POST['customers']))
                 ? array_map('sanitize_text_field', $_POST['customers']) : array(),
-            'is_active' => (isset($_POST['is_active']) ? sanitize_text_field($_POST['is_active']) : null),
-            'unlimited_use' => (isset($_POST['unlimited_use']) ? sanitize_text_field($_POST['unlimited_use']) : null),
+            'is_active' => (isset($_POST['is_active']) ? sanitize_text_field($_POST['is_active']) : 0),
+            'unlimited_use' => (isset($_POST['unlimited_use']) ? sanitize_text_field($_POST['unlimited_use']) : 0),
             'options' => array(),
         );
 

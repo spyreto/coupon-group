@@ -222,7 +222,7 @@ function display_create_or_edit_group_page()
                         <!-- Unlimited Use -->
                         <div class="admin-cg-form-checkbox">
                             <label for="unlimited_use">Unlimited Use:</label>
-                            <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['is_active']) ? checked($form_data['unlimited_use'], 1) : checked($old_coupon_group->unlimited_use, 1) ?> />
+                            <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['unlimited_use']) ? checked($form_data['unlimited_use'], 1) : checked($old_coupon_group->unlimited_use, 1) ?> />
                             <span class="admin-cg-input-info">Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).</span>
                         </div>
 
