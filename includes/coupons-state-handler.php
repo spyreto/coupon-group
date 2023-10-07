@@ -393,6 +393,12 @@ function display_coupon_group_options()
 
   $user_id = get_current_user_id();
   $coupon_groups = get_active_coupon_groups_for_user($user_id);
+
+
+  foreach ($coupon_groups as $coupon_group) {
+    $used_by = get_post_meta($coupon_group->ID, '_used_by', true);
+    $unlimited_use = get_post_meta($coupon_group->ID, '_unlimited_use', true);
+  }
   $available_options = get_option('custom_coupon_options', array());
 
   // Check if there are any coupon groups
@@ -492,7 +498,7 @@ function reapply_coupons_on_unlimited_use($order_id)
   // Check if there are any active coupon groups
   foreach ($active_user_groups as $active_group) {
     $unlimited_use = get_post_meta($active_group->ID, "_unlimited_use", true) == '1';
-
+    update_coupon_group_user_usage($active_group->ID, $user_id);
     // Check if the coupon group is unlimited use
     if (!$unlimited_use) {
       // set the couponsgroup to inactive

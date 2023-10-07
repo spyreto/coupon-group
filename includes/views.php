@@ -470,7 +470,7 @@ function display_coupon_groups()
                 <th>Name</th>
                 <th>Expire</th>
                 <th>Is Active</th>
-                <th>Total Users</th>
+                <th>Users | Usage</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -484,6 +484,7 @@ function display_coupon_groups()
                     $expiry = get_post_meta($group_id, '_expiry_date', true);
                     $is_active = get_post_meta($group_id, '_is_active', true) == "1" ? "Yes" : "No";
                     $total_users = get_post_meta($group_id, '_customers', true);
+                    $usage = get_post_meta($group_id, '_usage_count', true);
 
                     // For group deletion
                     $delete_nonce = wp_create_nonce('delete_coupon_group_' . $group_id);
@@ -495,7 +496,7 @@ function display_coupon_groups()
                         <td><?php the_title(); ?></td>
                         <td><?php echo esc_html($expiry); ?></td>
                         <td><?php echo esc_html($is_active); ?></td>
-                        <td><?php echo is_array($total_users) ? count($total_users) : "0"; ?></td>
+                        <td><?php echo is_array($total_users) ? count($total_users) : "0"; ?> | <?php echo $usage ? $usage : "0"; ?></td>
                         <td>
                             <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>">Edit</a>
                             <span>|</span>

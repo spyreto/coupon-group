@@ -152,7 +152,7 @@ function get_active_coupon_groups_for_user($user_id)
             'relation' => 'AND',
             array(
                 'key'     => '_customers',
-                'value'   => '"' . $user_id . '"',  // Searching for serialized array.
+                'value'   => sprintf(':"%s";',  $user_id), // Searching for serialized array.
                 'compare' => 'LIKE'
             ),
             array(
@@ -170,13 +170,13 @@ function get_active_coupon_groups_for_user($user_id)
                     'relation' => 'AND',
                     array(
                         'key'     => '_unlimited_use',
-                        'value'   => '0',
-                        'compare' => 'LIKE'  // Check if _unlimited_use is set to 1
+                        'value'   => '1',
+                        'compare' => 'NOT LIKE'  // Check if _unlimited_use is set to 1
                     ),
                     array(
                         'key'     => '_used_by',
-                        'value'   => '"' . $user_id . '"',  // Searching for serialized array.
-                        'compare' => 'NOT LIKE'
+                        'value'   => sprintf(':"%s";',  $user_id),  // Searching for serialized array.
+                        'compare' => 'NOT LIKE',
                     )
                 )
             )
@@ -290,15 +290,14 @@ function update_coupon_group_user_usage($group_id, $user_id)
     if (!in_array($user_id, $existing_users)) {
         $existing_users[] = $user_id;
         update_post_meta($group_id, '_used_by', $existing_users);
-
-        // Increase the usage count if needed.
-        $usage_count = get_post_meta($group_id, '_usage_count', true);
-        if (empty($usage_count)) {
-            $usage_count = 0;
-        }
-        $usage_count++;
-        update_post_meta($group_id, '_usage_count', $usage_count);
     }
+    // Increase the usage count if needed.
+    $usage_count = get_post_meta($group_id, '_usage_count', true);
+    if (empty($usage_count)) {
+        $usage_count = 0;
+    }
+    $usage_count++;
+    update_post_meta($group_id, '_usage_count', $usage_count);
 }
 
 /**
