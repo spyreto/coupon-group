@@ -258,6 +258,18 @@ function handle_coupon_group_update($meta_id, $object_id, $meta_key, $meta_value
         }
       }
       break;
+    case "_unlimited_use":
+      $unlimited_use  = $meta_value;
+      // Get the users who used the coupon group
+      $used_by =  get_customers_used_coupon_group($object_id);
+      if ($unlimited_use == '1') {  // If activated
+        // Add coupons to users
+        add_coupons_to_users($meta_id, $object_id, $used_by);
+      } else {  // If deactivated
+        // Remove coupons from users
+        remove_coupons_from_users($object_id, $used_by);
+      }
+      break;
     default:
       break;
   }
@@ -477,7 +489,7 @@ function reapply_coupons_on_unlimited_use($order_id)
   // Get the active coupon groups for the user
   $active_user_groups =  get_active_coupon_groups_for_user($user_id);
 
-  error_log('liko');
+  // Check if there are any active coupon groups
   foreach ($active_user_groups as $active_group) {
     $unlimited_use = get_post_meta($active_group->ID, "_unlimited_use", true) == '1';
 

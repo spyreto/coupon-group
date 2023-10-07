@@ -300,3 +300,18 @@ function update_coupon_group_user_usage($group_id, $user_id)
         update_post_meta($group_id, '_usage_count', $usage_count);
     }
 }
+
+/**
+ * Get the users who have used a coupon group.
+ *
+ * @param int $group_id The ID of the coupon group.
+ * @return array An array of user IDs who have used the coupon group.
+ */
+function get_customers_used_coupon_group($group_id)
+{
+    $existing_users = get_post_meta($group_id, '_used_by', true);
+    if (empty($existing_users) || !is_array($existing_users)) {
+        $existing_users = array();
+    }
+    return $existing_users;
+}
