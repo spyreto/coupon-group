@@ -115,6 +115,29 @@ function is_coupon_part_of_group($coupon_id)
 }
 
 /**
+ * Retrieve all active coupon groups.
+ *
+ * @return array List of WP_Post objects representing the coupon groups.
+ */
+function get_active_coupon_groups()
+{
+    $args = array(
+        'post_type'      => 'coupon_group',
+        'posts_per_page' => -1,
+        'meta_query'     => array(
+            array(
+                'key'     => '_is_active',
+                'value'   => '1',
+                'compare' => 'LIKE'
+            )
+        )
+    );
+
+    return get_posts($args);
+}
+
+
+/**
  * Retrieve coupon groups where a specific coupon is included.
  *
  * @param int Coupon Code.

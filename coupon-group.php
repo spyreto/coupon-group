@@ -166,4 +166,51 @@ class CouponGroupPlugin
     }
 }
 
+
+/**
+ * Uninstallation routine for My Custom Plugin.
+ *
+ * This function is called when the user decides to delete the plugin.
+ * It performs cleanup tasks to remove any plugin-related data and settings.
+ */
+function coupon_group_uninstall()
+{
+    // Get all user IDs.
+    $user_ids = get_users(array('fields' => 'ID'));
+
+    // Loop through each user and remove the plugin's user_meta.
+    foreach ($user_ids as $user_id) {
+        // Check if the user_meta exists for the user.
+        $coupons_to_remove_meta = get_user_meta($user_id, '_coupons_to_remove', true);
+        $coupons_to_remove_timestamp_meta = get_user_meta($user_id, '_coupons_to_remove_timestamp', true);
+        $coupons_to_add_meta = get_user_meta($user_id, '_coupons_to_add', true);
+        $coupons_to_add_timestamp_meta = get_user_meta($user_id, '_coupons_to_add_timestamp', true);
+
+        if ($coupons_to_remove_meta !== '') {
+            delete_user_meta($user_id, '_coupons_to_remove');
+        }
+        if ($coupons_to_remove_timestamp_meta !== '') {
+            delete_user_meta($user_id, '_coupons_to_remove_timestamp');
+        }
+        if ($coupons_to_add_meta !== '') {
+            delete_user_meta($user_id, '_coupons_to_add');
+        }
+        if ($coupons_to_add_timestamp_meta !== '') {
+            delete_user_meta($user_id, '_coupons_to_add_timestamp');
+        }
+    }
+
+    // Deactivate all active coupon groups
+    $active_coupon_groups = get_active_coupon_groups();
+    foreach ($active_coupon_groups as $coupon_group) {
+        update_post_meta($coupon_group->ID, '_is_active', '0');
+    }
+
+    // Unregister the custom post type, so the rules are no longer in memory.
+    unregister_post_type('coupon_group');
+}
+// Register the uninstallation hook.
+register_uninstall_hook(__FILE__, 'coupon_group_uninstall');
+
+
 $coupon_group_plugin = new CouponGroupPlugin();

@@ -49,7 +49,7 @@ function overview_page()
         }
         ?>
         <h1>Coupon Group</h1>
-        <h2>Welcome to the Coupon Group plugin management page. Use the tools below to manage groups, discounts, and privileges.</h2>
+        <h2>Welcome to the Coupon Group plugin management page. Use the tools below to view and manage coupon groups and group otpions.</h2>
         <?php
         'display_delete_confirmation_box'();
         'display_coupon_groups'();
@@ -393,11 +393,11 @@ function display_create_or_edit_coupon_option_page()
         ?>
             <div class="admin-cg-wrap">
                 <div class="admin-cg-main">
-                    <h1>Edit Coupon Option</h1>
+                    <h1>Edit Coupon Group Option</h1>
                     <?php if (isset($_POST["create_coupon_option_submitted"]) && $_POST["create_coupon_option_submitted"] == 'true') create_or_edit_coupon_option_handler()  ?>
                     <form method="POST">
                         <div class="admin-cg-form-field">
-                            <label for="custom_coupon_title">Coupon Title</label>
+                            <label for="custom_coupon_title">Option Title</label>
                             <input type="text" name="custom_option_title" id="custom_option_title" value="<?php echo esc_attr($form_data['custom_option_title'] ?? ($option['title']  ?? '')); ?>" required>
                         </div>
                         <div class="admin-cg-form-field">
@@ -420,11 +420,11 @@ function display_create_or_edit_coupon_option_page()
         ?>
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
-                <h1>Create Coupon Option</h1>
+                <h1>Create Coupon Group Option</h1>
                 <?php if (isset($_POST["create_coupon_option_submitted"]) && $_POST["create_coupon_option_submitted"] == 'true') create_or_edit_coupon_option_handler()  ?>
                 <form method="POST">
                     <div class="admin-cg-form-field">
-                        <label for="custom_coupon_title">Coupon Title</label>
+                        <label for="custom_coupon_title">Option Title</label>
                         <input type="text" name="custom_option_title" id="custom_option_title" value="<?php echo esc_attr($form_data['custom_option_title'] ?? ''); ?>" required>
                     </div>
                     <div class="admin-cg-form-field">
@@ -529,7 +529,7 @@ function display_coupon_options()
     $custom_coupon_options = get_option('custom_coupon_options', array());
 
 ?>
-    <h3>Custom Coupon Options</h3>
+    <h3>Coupon Group Options</h3>
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
