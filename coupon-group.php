@@ -2,10 +2,10 @@
 
 /*
 Plugin Name: Coupon Group
-Description: This plugin enhances WooCommerce by introducing grouped coupon functionalities. Store administrators can effortlessly create, manage, and assign coupon groups with varying properties, such as discount rates or same-day delivery perks. Designed for tailored promotions, it allows for precise targeting by associating specific customers with unique coupon groups, ensuring personalized shopping experiences for every user.
+Description: The Coupon Group plugin extends the functionality of your WooCommerce store by allowing you to create and manage custom coupon groups with unique offers and membership options.
 Version: 1.0
 Author: Spiros Dimou
-Auhtor URI:
+Auhtor URI: https://www.linkedin.com/in/spiridon-dimou
 */
 
 // Ensure this file is being included by WordPress (and not accessed directly)
@@ -13,17 +13,13 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+// Include the necessary WordPress core file.
+include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-// Check if WooCommerce is activated
-if (!function_exists('is_woocommerce_activated')) {
-    function is_woocommerce_activated()
-    {
-        if (class_exists('woocommerce')) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+// Check if WooCommerce is active
+if (is_admin() && !is_plugin_active('woocommerce/woocommerce.php')) {
+    // WooCommerce is not activated.
+    wp_die('Error: WooCommerce plugin is not activated. Please activate WooCommerce to use Coupon Group Plugin.');
 }
 
 require_once plugin_dir_path(__FILE__) . 'includes/form-handler.php';
