@@ -212,5 +212,17 @@ function coupon_group_uninstall()
 // Register the uninstallation hook.
 register_uninstall_hook(__FILE__, 'coupon_group_uninstall');
 
+// Define a custom function to run when the plugin is deactivated.
+function coupon_group_deactivation_action()
+{
+    // Deactivate all active coupon groups
+    $active_coupon_groups = get_active_coupon_groups();
+    foreach ($active_coupon_groups as $coupon_group) {
+        update_post_meta($coupon_group->ID, '_is_active', '0');
+    }
+}
+// Register the deactivation hook.
+register_deactivation_hook(__FILE__, 'coupon_group_deactivation_action');
 
+// Initialize the plugin
 $coupon_group_plugin = new CouponGroupPlugin();
