@@ -1,6 +1,7 @@
 === Coupon Group ===
 Contributors: Spiros Dimou
-Tags: coupon group, woocommerce coupons, group coupons, woocommerce
+- [![Spiros Dimou](https://media.licdn.com/dms/image/C4E03AQHkh4not3eeqg/profile-displayphoto-shrink_800_800/0/1655919860955?e=1702512000&v=beta&t=7tUPa0mMvo4yQd7s6rUGE3SqlhRAjeoGCVyDFSyuTv0)](https://www.linkedin.com/in/spiridon-dimou/)
+Tags: coupon group, woocommerce coupons, group coupons, woocommerce, shop
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3 or higher
@@ -11,7 +12,14 @@ License URI: https://github.com/spyreto/coupon-group/blob/main/LICENSE
 
 Description
 -----------
-This is a sample WordPress plugin that demonstrates the usage of custom functionality.
+The Coupon Group plugin extends the functionality of your WooCommerce store by allowing you to create and manage custom coupon groups with unique offers and membership options. With this powerful plugin, you can:
+
+* Create Custom Coupon Groups: Define distinct coupon groups, each with its own set of discounts, promotions, and conditions.
+Assign Customers to Groups: Easily add registered customers to specific coupon groups, granting them access to exclusive deals and benefits.
+* View Group Details: Gain insights into each coupon group's membership and usage statistics directly from the WordPress admin dashboard.
+* Display Group Information: Showcase coupon group details on the WooCommerce order details page to inform administrators and customers about the benefits and perks associated with their membership.
+
+* Coupon Group Integration simplifies the management of coupon promotions, enhances user experience, and helps you maximize the potential of your WooCommerce store.
 
 Installation
 ------------
