@@ -32,7 +32,7 @@ function create_or_edit_coupon_group_handler()
         );
 
         // Check for empty Coupon Group name
-        is_not_empty($form_data['group_name'], "The \"Coupon Group Name\" field is required. Please enter a value.");
+        is_not_empty($form_data['group_name'], __("The \"Coupon Group Name\" field is required. Please enter a value.", 'coupon-group'));
 
         // Validating the form data       
         $expiry_date = is_valid_expiry_date($form_data['expiry_date'], $form_data['is_active']);
@@ -121,7 +121,7 @@ function create_or_edit_coupon_option_handler()
             'description' => sanitize_textarea_field($_POST['custom_option_description'])
         );
         // Check for empty "Title" field
-        is_not_empty($form_data['title'], "The \"Coupon Title\" field is required. Please enter a value.");
+        is_not_empty($form_data['title'], __("The \"Coupon Title\" field is required. Please enter a value.", 'coupon-group'));
         $custom_coupon_options = get_option('custom_coupon_options', array());
 
         if (!empty($option_id)) {

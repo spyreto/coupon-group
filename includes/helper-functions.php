@@ -9,13 +9,13 @@ if (!defined('ABSPATH')) {
 function get_readable_discount_type($type)
 {
     $types = array(
-        'fixed_cart'      => __('Fixed cart discount', 'woocommerce'),
-        'percent'         => __('Percentage discount', 'woocommerce'),
-        'fixed_product'   => __('Fixed product discount', 'woocommerce'),
-        'percent_product' => __('Percentage product discount', 'woocommerce'),
+        'fixed_cart'      => __('Fixed cart discount', 'coupon-group'),
+        'percent'         => __('Percentage discount', 'coupon-group'),
+        'fixed_product'   => __('Fixed product discount', 'coupon-group'),
+        'percent_product' => __('Percentage product discount', 'coupon-group'),
     );
 
-    return isset($types[$type]) ? $types[$type] : __('Unknown discount type', 'woocommerce');
+    return isset($types[$type]) ? $types[$type] : __('Unknown discount type', 'coupon-group');
 }
 
 
@@ -31,14 +31,14 @@ function is_valid_expiry_date($date, $is_active)
         return null;
     } elseif (!preg_match('/^\d{2}-\d{2}-\d{4}$/', $date)) {
         // Check if the format is correct
-        throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
+        throw new Exception(__('The expiry date you entered is invalid. Please enter a valid future date.', 'coupon-group'));
     } elseif ($is_active == "1") { // If the offer is active
         // Convert date string to timestamp
         $date_timestamp = strtotime($date);
 
         // Check if the date is a valid date (for example, not something like 00-00-00)
         if (!$date_timestamp) {
-            throw new Exception("The expiry date you entered is invalid. Please enter a valid future date.");
+            throw new Exception(__('The expiry date you entered is invalid. Please enter a valid future date.', 'coupon-group'));
         }
 
         // Get today's date
@@ -46,7 +46,7 @@ function is_valid_expiry_date($date, $is_active)
 
         // Check if the provided date is in the past
         if ($date_timestamp < $today) {
-            throw new Exception("The expiry date you entered is invalid or in the past. Please enter a valid future date.");
+            throw new Exception(__('The expiry date you entered is invalid or in the past. Please enter a valid future date.', 'coupon-group'));
         }
         return $date;
     } else {

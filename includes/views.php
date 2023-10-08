@@ -13,43 +13,43 @@ function overview_page()
         if (isset($_GET['group_deleted']) == 'true') {
         ?>
             <div class="updated notice is-dismissible">
-                <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been deleted.</p>
+                <p><?php echo esc_html__('The Coupon Group ', 'coupon-group'); ?> <strong><?php echo $_GET['group_name'] ?></strong> <?php echo esc_html__(' has been deleted.', 'coupon-group'); ?> </p>
             </div>
         <?php
         } elseif (isset($_GET['group_updated']) == 'true') {
         ?>
             <div class="updated notice-success is-dismissible">
-                <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been updated successfully.</p>
+                <p><?php echo esc_html__('The Coupon Group ', 'coupon-group'); ?> <strong><?php echo $_GET['group_name'] ?></strong> <?php echo esc_html__(' has been updated successfully.', 'coupon-group'); ?></p>
             </div>
         <?php
         } elseif (isset($_GET['group_created']) == 'true') {
         ?>
             <div class="updated notice is-dismissible">
-                <p>The Coupon Group <strong><?php echo $_GET['group_name'] ?></strong> has been created successfully.</p>
+                <p><?php echo esc_html__('The Coupon Group ', 'coupon-group'); ?> <strong><?php echo $_GET['group_name'] ?></strong><?php echo esc_html__(' has been created successfully.', 'coupon-group'); ?></p>
             </div>
         <?php
         } elseif (isset($_GET['option_deleted']) == 'true') {
         ?>
             <div class="updated notice is-dismissible">
-                <p>The Coupon Group Option <strong><?php echo $_GET['option_title'] ?></strong> has been deleted.</p>
+                <p><?php echo esc_html__('The Coupon Group Option ', 'coupon-group'); ?> <strong><?php echo $_GET['option_title'] ?></strong> <?php echo esc_html__(' has been deleted.', 'coupon-group'); ?></p>
             </div>
         <?php
         } elseif (isset($_GET['option_updated']) == 'true') {
         ?>
             <div class="updated notice-success is-dismissible">
-                <p>The Coupon Group Option <strong><?php echo $_GET['option_title'] ?></strong> has been updated successfully.</p>
+                <p><?php echo esc_html__('The Coupon Group Option ', 'coupon-group'); ?> <strong><?php echo $_GET['option_title'] ?></strong> <?php echo esc_html__(' has been updated successfully.', 'coupon-group'); ?></p>
             </div>
         <?php
         } elseif (isset($_GET['option_created']) == 'true') {
         ?>
             <div class="updated notice is-dismissible">
-                <p>The Coupon Group Option <strong><?php echo $_GET['option_title'] ?></strong> has been created successfully.</p>
+                <p><?php echo esc_html__('The Coupon Group Option ', 'coupon-group'); ?> <strong><?php echo $_GET['option_title'] ?></strong><?php echo esc_html__(' has been created successfully.', 'coupon-group'); ?></p>
             </div>
         <?php
         }
         ?>
-        <h1>Coupon Group</h1>
-        <h2>Welcome to the Coupon Group plugin management page. Use the tools below to view and manage coupon groups and group otpions.</h2>
+        <h1><?php echo esc_html__('Coupon Group', 'coupon-group'); ?></h1>
+        <h2><?php echo esc_html__('Welcome to the Coupon Group plugin management page. Use the tools below to view and manage coupon groups and group otpions.', 'coupon-group'); ?></h2>
         <?php
         'display_delete_confirmation_box'();
         'display_coupon_groups'();
@@ -67,10 +67,10 @@ function display_delete_confirmation_box()
 {
 ?>
     <div class="admin-cg-delete-confirmation-box">
-        <p>Are you sure that you want to delete <strong class="admin-cg-delete-item-type"></strong> with name <strong class="admin-cg-delete-item-name"></strong></p>
+        <p><?php echo esc_html__('Are you sure that you want to delete ', 'coupon-group'); ?><strong class="admin-cg-delete-item-type"></strong><?php echo esc_html__(' with name ', 'coupon-group'); ?> <strong class="admin-cg-delete-item-name"></strong></p>
         <div>
-            <button data-action='cancel' class="admin-cg-button-secondary">Cancel</button>
-            <button data-action='delete' class="admin-cg-button-danger">Delete</button>
+            <button data-action='cancel' class="admin-cg-button-secondary"><?php echo esc_html__('Cancel', 'coupon-group'); ?></button>
+            <button data-action='delete' class="admin-cg-button-danger"><?php echo esc_html__('Delete', 'coupon-group'); ?></button>
         </div>
     </div>
     <?php
@@ -135,7 +135,7 @@ function display_create_or_edit_group_page()
                     <circle cx="12" cy="19" r="2" />
                     <path d="M10 3h4v12h-4z" />
                 </svg>
-                <p> No Coupon Group found</p>
+                <p> <?php echo esc_html__('No Coupon Group found', 'coupon-group'); ?></p>
             </div>
         <?php
         } else {
@@ -143,18 +143,18 @@ function display_create_or_edit_group_page()
         ?>
             <div class="admin-cg-wrap">
                 <div class="admin-cg-main">
-                    <h1>Edit Coupon Group</h1>
+                    <h1><?php echo esc_html__('Edit Coupon Group', 'coupon-group'); ?></h1>
                     <?php if (isset($_POST["create_coupon_group_submitted"]) && $_POST["create_coupon_group_submitted"] == 'true') create_or_edit_coupon_group_handler()  ?>
                     <form method="POST">
                         <!-- Group Name -->
                         <div class="admin-cg-form-field sm-form-field">
-                            <label for="group_name">Group Name</label>
+                            <label for="group_name"><?php echo esc_html__('Group Name', 'coupon-group'); ?></label>
                             <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ($old_coupon_group->name  ?? '')); ?>" required>
                         </div>
 
                         <!-- WooCommerce Coupons -->
                         <div class="admin-cg-form-field">
-                            <label for="wc_coupons">WooCommerce Coupons</label>
+                            <label for="wc_coupons"><?php echo esc_html__('WooCommerce Coupons', 'coupon-group'); ?></label>
                             <select name="wc_coupons[]" id="wc_coupons" multiple>
                                 <?php
                                 if (empty($form_data['wc_coupons'])) {
@@ -176,12 +176,12 @@ function display_create_or_edit_group_page()
                                 }
                                 ?>
                             </select>
-                            <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>">Go to WooCommerce Coupons</a>
+                            <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>"><?php echo esc_html__('Go to WooCommerce Coupons', 'coupon-group'); ?></a>
                         </div>
 
                         <!-- Customers -->
                         <div class="admin-cg-form-field">
-                            <label for="customers">Customers</label>
+                            <label for="customers"><?php echo esc_html__('Customers', 'coupon-group'); ?></label>
                             <select name="customers[]" id="customers" multiple>
                                 <?php
                                 if (empty($form_data['wc_coupons'])) {
@@ -207,28 +207,28 @@ function display_create_or_edit_group_page()
 
                         <!-- Expiry Date -->
                         <div class="admin-cg-form-field">
-                            <label for="expiry_date">Expiry Date</label>
+                            <label for="expiry_date"><?php echo esc_html__('Expiry Date', 'coupon-group'); ?></label>
                             <input type="text" name="expiry_date" id="expiry_date" class="date-picker sm-form-field" autocomplete="off" value="<?php echo esc_attr(isset($form_data['expiry_date']) ? $form_data['expiry_date'] : ($old_coupon_group->expiry_date ?? '')); ?>">
-                            <span class="admin-cg-input-info">End date of the Coupon Group. If it is empty the group never expires.</span>
+                            <span class="admin-cg-input-info"><?php echo esc_html__('End date of the Coupon Group. If it is empty the group never expires.', 'coupon-group'); ?></span>
                         </div>
 
                         <!-- Is Active -->
                         <div class="admin-cg-form-checkbox">
-                            <label for="is_active">Is active:</label>
+                            <label for="is_active"><?php echo esc_html__('Is active:', 'coupon-group'); ?></label>
                             <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : checked($old_coupon_group->is_active, 1) ?> />
-                            <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
+                            <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to activate the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                         </div>
 
                         <!-- Unlimited Use -->
                         <div class="admin-cg-form-checkbox">
-                            <label for="unlimited_use">Unlimited Use:</label>
+                            <label for="unlimited_use"><?php echo esc_html__('Unlimited Use:', 'coupon-group'); ?></label>
                             <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['unlimited_use']) ? checked($form_data['unlimited_use'], 1) : checked($old_coupon_group->unlimited_use, 1) ?> />
-                            <span class="admin-cg-input-info">Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).</span>
+                            <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                         </div>
 
                         <!-- Group options -->
                         <div class="admin-cg-fieldset">
-                            <h3>Coupon Group Options</h3>
+                            <h3><?php echo esc_html__('Coupon Group Options', 'coupon-group'); ?></h3>
                             <?php
                             // Display checkboxes for each available option.
                             foreach ($available_options as $option) {
@@ -245,7 +245,7 @@ function display_create_or_edit_group_page()
                             <?php
                             }
                             ?>
-                            <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>">Create Coupon Group Option</a>
+                            <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>"><?php echo esc_html__('Create Coupon Group Option', 'coupon-group'); ?></a>
                         </div>
 
                         <!-- Sents group id in order to update the group -->
@@ -253,7 +253,7 @@ function display_create_or_edit_group_page()
                         <input type="hidden" name="create_coupon_group_submitted" value="true">
                         <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>
                         <?php
-                        submit_button("Update");
+                        submit_button(__('Update', 'coupon-group'));
                         ?>
                     </form>
                 </div>
@@ -264,18 +264,18 @@ function display_create_or_edit_group_page()
         ?>
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
-                <h1>Create Coupon Group</h1>
+                <h1><?php echo esc_html__('Create Coupon Group', 'coupon-group'); ?></h1>
                 <?php if (isset($_POST["create_coupon_group_submitted"]) && $_POST["create_coupon_group_submitted"] == 'true') create_or_edit_coupon_group_handler()  ?>
                 <form method="POST">
                     <!-- Group Name -->
                     <div class="admin-cg-form-field sm-form-field">
-                        <label for="group_name">Group Name</label>
+                        <label for="group_name"><?php echo esc_html__('Group Name', 'coupon-group'); ?></label>
                         <input type="text" name="group_name" id="group_name" value="<?php echo esc_attr($form_data['group_name'] ?? ''); ?>" required>
                     </div>
 
                     <!-- WooCommerce Coupons -->
                     <div class="admin-cg-form-field">
-                        <label for="wc_coupons">WooCommerce Coupons</label>
+                        <label for="wc_coupons"><?php echo esc_html__('WooCommerce Coupons', 'coupon-group'); ?></label>
                         <select name="wc_coupons[]" id="wc_coupons" multiple>
                             <?php foreach ($coupons as $index => $coupon) : ?>
                                 <option value="<?php echo $coupon->ID; ?>" <?php echo isset($form_data['wc_coupons']) && in_array($coupon->ID, $form_data['wc_coupons']) ? 'selected' : ''; ?>>
@@ -283,12 +283,12 @@ function display_create_or_edit_group_page()
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>">Go to WooCommerce Coupons</a>
+                        <a href="<?php echo admin_url('edit.php?post_type=shop_coupon'); ?>"><?php echo esc_html__('Go to WooCommerce Coupons', 'coupon-group'); ?></a>
                     </div>
 
                     <!-- Customers -->
                     <div class="admin-cg-form-field ">
-                        <label for="customers">Customers</label>
+                        <label for="customers"><?php echo esc_html__('Customers', 'coupon-group'); ?></label>
                         <select name="customers[]" id="customers" multiple>
                             <?php foreach ($users as $user) : ?>
                                 <option value="<?php echo $user->ID; ?>" <?php echo isset($form_data['customers']) && in_array($user->ID, $form_data['customers']) ? 'selected' : ''; ?>>
@@ -302,26 +302,26 @@ function display_create_or_edit_group_page()
                     <div class="admin-cg-form-field">
                         <label for="expiry_date">Expiry Date</label>
                         <input type="text" name="expiry_date" id="expiry_date" class="date-picker sm-form-field" autocomplete="off" value="<?php echo esc_attr($form_data['expiry_date'] ?? ""); ?>">
-                        <span class="admin-cg-input-info">End date of the Coupon Group. If it is empty the group never expires.</span>
+                        <span class="admin-cg-input-info"><?php echo esc_html__('End date of the Coupon Group. If it is empty the group never expires.', 'coupon-group'); ?></span>
                     </div>
 
                     <!-- Is Active -->
                     <div class="admin-cg-form-checkbox">
-                        <label for="is_active">Is active:</label>
+                        <label for="is_active"><?php echo esc_html__('Is active:', 'coupon-group'); ?></label>
                         <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : ""; ?> />
-                        <span class="admin-cg-input-info">Check this box to activate the Coupon Group until the expiration date (if set).</span>
+                        <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to activate the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                     </div>
 
                     <!-- Unlimited Use -->
                     <div class="admin-cg-form-checkbox">
-                        <label for="unlimited_use">Unlimited Use:</label>
+                        <label for="unlimited_use"><?php echo esc_html__('Unlimited Use:', 'coupon-group'); ?></label>
                         <input type="checkbox" id="unlimited_use" name="unlimited_use" value="1" <?php isset($form_data['unlimited_use']) ? checked($form_data['unlimited_use'], 1) : ""; ?> />
-                        <span class="admin-cg-input-info">Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).</span>
+                        <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to allow unlimited use of the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                     </div>
 
                     <!-- Group options -->
                     <div class="admin-cg-fieldset">
-                        <h3>Coupon Group Options</h3>
+                        <h3><?php echo esc_html__('Coupon Group Options', 'coupon-group'); ?></h3>
                         <?php
                         // Display checkboxes for each available option.
                         foreach ($available_options as $option) {
@@ -342,13 +342,13 @@ function display_create_or_edit_group_page()
                         <?php
                         }
                         ?>
-                        <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>">Create Coupon Group Option</a>
+                        <a href="<?php echo admin_url('admin.php?page=create-coupon-option'); ?>"><?php echo esc_html__('Create Coupon Group Option', 'coupon-group'); ?></a>
                     </div>
 
                     <input type="hidden" name="create_coupon_group_submitted" value="true">
                     <?php wp_nonce_field('coupon_group_nonce_action', 'coupon_group_nonce'); ?>
                     <?php
-                    submit_button();
+                    submit_button(__('Save Changes', 'coupon-group'));
                     ?>
                 </form>
             </div>
@@ -385,7 +385,7 @@ function display_create_or_edit_coupon_option_page()
                     <circle cx="12" cy="19" r="2" />
                     <path d="M10 3h4v12h-4z" />
                 </svg>
-                <p> No Coupon Option found</p>
+                <p><?php echo esc_html__('No Coupon Option found.', 'coupon-group'); ?></p>
             </div>
         <?php
         } else {
@@ -393,15 +393,15 @@ function display_create_or_edit_coupon_option_page()
         ?>
             <div class="admin-cg-wrap">
                 <div class="admin-cg-main">
-                    <h1>Edit Coupon Group Option</h1>
+                    <h1><?php echo esc_html__('Edit Coupon Group Option', 'coupon-group'); ?></h1>
                     <?php if (isset($_POST["create_coupon_option_submitted"]) && $_POST["create_coupon_option_submitted"] == 'true') create_or_edit_coupon_option_handler()  ?>
                     <form method="POST">
                         <div class="admin-cg-form-field">
-                            <label for="custom_coupon_title">Option Title</label>
+                            <label for="custom_coupon_title"><?php echo esc_html__('Option Title', 'coupon-group'); ?></label>
                             <input type="text" name="custom_option_title" id="custom_option_title" value="<?php echo esc_attr($form_data['custom_option_title'] ?? ($option['title']  ?? '')); ?>" required>
                         </div>
                         <div class="admin-cg-form-field">
-                            <label for="custom_option_description">Description (Optional)</label>
+                            <label for="custom_option_description"><?php echo esc_html__('Description (Optional)', 'coupon-group'); ?></label>
                             <textarea name="custom_option_description" id="custom_option_description" rows="5" cols="40"><?php echo esc_attr($form_data['custom_option_description'] ?? ($option['description']  ?? '')); ?></textarea>
                         </div>
                         <input type="hidden" name="option_id" value="<?php echo $option_id ?>">
@@ -409,7 +409,7 @@ function display_create_or_edit_coupon_option_page()
                         <?php wp_nonce_field('coupon_option_nonce_action', 'coupon_option_nonce'); ?>
                         <?php
                         wp_nonce_field('coupon_option_nonce_action', 'coupon_option_nonce');
-                        submit_button("Update");
+                        submit_button(__('Update', 'coupon-group'));
                         ?>
                     </form>
                 </div>
@@ -420,22 +420,22 @@ function display_create_or_edit_coupon_option_page()
         ?>
         <div class="admin-cg-wrap">
             <div class="admin-cg-main">
-                <h1>Create Coupon Group Option</h1>
+                <h1><?php echo esc_html__('Create Coupon Group Option', 'coupon-group'); ?></h1>
                 <?php if (isset($_POST["create_coupon_option_submitted"]) && $_POST["create_coupon_option_submitted"] == 'true') create_or_edit_coupon_option_handler()  ?>
                 <form method="POST">
                     <div class="admin-cg-form-field">
-                        <label for="custom_coupon_title">Option Title</label>
+                        <label for="custom_coupon_title"><?php echo esc_html__('Option Title', 'coupon-group'); ?></label>
                         <input type="text" name="custom_option_title" id="custom_option_title" value="<?php echo esc_attr($form_data['custom_option_title'] ?? ''); ?>" required>
                     </div>
                     <div class="admin-cg-form-field">
-                        <label for="custom_option_description">Description (Optional)</label>
+                        <label for="custom_option_description"><?php echo esc_html__('Description (Optional)', 'coupon-group'); ?></label>
                         <textarea name="custom_option_description" id="custom_option_description" rows="5" cols="40"><?php echo esc_attr($form_data['custom_option_description'] ?? ''); ?></textarea>
                     </div>
                     <input type="hidden" name="create_coupon_option_submitted" value="true">
                     <?php wp_nonce_field('coupon_option_nonce_action', 'coupon_option_nonce'); ?>
                     <?php
                     wp_nonce_field('coupon_option_nonce_action', 'coupon_option_nonce');
-                    submit_button("Save Option");
+                    submit_button(__('Save Option', 'coupon-group'));
                     ?>
                 </form>
             </div>
@@ -461,17 +461,17 @@ function display_coupon_groups()
     $query = new WP_Query($args);
 
     ?>
-    <h3>Coupon Groups</h3>
+    <h3><?php echo esc_html__('Coupon Groups', 'coupon-group'); ?></h3>
     <table class="wp-list-table widefat fixed striped">
 
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Expire</th>
-                <th>Is Active</th>
-                <th>Users | Usage</th>
-                <th>Action</th>
+                <th><?php echo esc_html__('ID', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Name', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Expiry', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Is Active', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Users | Usage', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Action', 'coupon-group'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -498,9 +498,9 @@ function display_coupon_groups()
                         <td><?php echo esc_html($is_active); ?></td>
                         <td><?php echo is_array($total_users) ? count($total_users) : "0"; ?> | <?php echo $usage ? $usage : "0"; ?></td>
                         <td>
-                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>">Edit</a>
+                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $group_id) ?>"><?php echo esc_html__('Edit', 'coupon-group'); ?></a>
                             <span>|</span>
-                            <a class="admin-cg-delete-link" data-name="<?php echo the_title(); ?>" data-type="Coupon Group" href="<?php echo $delete_link ?>">Delete</a>
+                            <a class="admin-cg-delete-link" data-name="<?php echo the_title(); ?>" data-type="Coupon Group" href="<?php echo $delete_link ?>"><?php echo esc_html__('Delete', 'coupon-group'); ?></a>
                         </td>
                     </tr>
                 <?php
@@ -510,7 +510,7 @@ function display_coupon_groups()
             } else {
                 ?>
                 <tr>
-                    <td class="admin-cg-empty-table-cell" colspan='6'>No Coupon Groups found.</td>
+                    <td class="admin-cg-empty-table-cell" colspan='6'><?php echo esc_html__('No Coupon Groups found.', 'coupon-group'); ?></td>
                 </tr>
             <?php
             }
@@ -529,13 +529,13 @@ function display_coupon_options()
     $custom_coupon_options = get_option('custom_coupon_options', array());
 
 ?>
-    <h3>Coupon Group Options</h3>
+    <h3><?php echo esc_html__('Coupon Group Options', 'coupon-group'); ?></h3>
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Action</th>
+                <th><?php echo esc_html__('Name', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Description', 'coupon-group'); ?></th>
+                <th><?php echo esc_html__('Action', 'coupon-group'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -552,9 +552,9 @@ function display_coupon_options()
                         <td><?php echo esc_html($option['title']) ?></td>
                         <td><?php echo esc_html($option['description']) ?></td>
                         <td>
-                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-option&option_id=' . $option['id']) ?>">Edit</a>
+                            <a href="<?php echo admin_url('admin.php?page=edit-coupon-option&option_id=' . $option['id']) ?>"><?php echo esc_html__('Edit', 'coupon-group'); ?></a>
                             <span>|</span>
-                            <a class="admin-cg-delete-link" data-name="<?php echo $option['title']; ?>" data-type="Coupon Group Option" href="<?php echo $delete_link ?>" data-name="<?php echo the_title(); ?>">Delete</a>
+                            <a class="admin-cg-delete-link" data-name="<?php echo $option['title']; ?>" data-type="Coupon Group Option" href="<?php echo $delete_link ?>" data-name="<?php echo the_title(); ?>"><?php echo esc_html__('Delete', 'coupon-group'); ?></a>
                         </td>
                         <td></td>
                     </tr>
@@ -563,7 +563,7 @@ function display_coupon_options()
             } else {
                 ?>
                 <tr>
-                    <td class="admin-cg-empty-table-cell" colspan='3'>No custom coupon options found.</td>
+                    <td class="admin-cg-empty-table-cell" colspan='3'><?php echo esc_html__('No custom coupon options found.', 'coupon-group'); ?></td>
                 </tr>
             <?php
             }

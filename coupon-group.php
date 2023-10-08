@@ -82,7 +82,7 @@ class CouponGroupPlugin
 
         add_menu_page(
             'Overview',         // Page title
-            'Coupon Group',     // Menu title
+            __('Coupon Group', 'coupon-group'),     // Menu title
             'manage_options',   // Capability
             'coupon-group',     // Menu slug
             'overview_page', // Callback function
@@ -95,7 +95,7 @@ class CouponGroupPlugin
         add_submenu_page(
             'coupon-group',
             'Overview',
-            'Overview',
+            __('Overview', 'coupon-group'),
             'manage_options',
             'coupon-group',
             'overview_page',
@@ -105,7 +105,7 @@ class CouponGroupPlugin
         $new_coupon_group_hook = add_submenu_page(
             'coupon-group',                    // The slug name for the parent menu (to which you are adding this submenu).
             'New Group',          // The text to be displayed in the title tags of the page when the menu is selected.
-            'New Group',               // The text to be used for the menu.
+            __('New Group', 'coupon-group'),               // The text to be used for the menu.
             'manage_options',                // The capability required for this menu to be displayed to the user.
             'new-group',        // The slug name to refer to this menu by.
             'display_create_or_edit_group_page' // The function to be called to output the content for this page.
@@ -127,7 +127,7 @@ class CouponGroupPlugin
         add_submenu_page(
             'coupon-group',           // Parent slug
             'New Coupon Option',               // Page title
-            'New Coupon Option',                     // Menu title
+            __('New Coupon Option', 'coupon-group'),   // Menu title
             'manage_woocommerce',             // Capability
             'create-coupon-option',                // Menu slug
             'display_create_or_edit_coupon_option_page'  // Callback function
@@ -223,6 +223,17 @@ function coupon_group_deactivation_action()
 }
 // Register the deactivation hook.
 register_deactivation_hook(__FILE__, 'coupon_group_deactivation_action');
+
+/**
+ * Load the text domain for translation.
+ */
+function coupon_group_load_text_domain()
+{
+    load_plugin_textdomain('coupon-group', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+}
+
+add_action('plugins_loaded', 'coupon_group_load_text_domain');
+
 
 // Initialize the plugin
 $coupon_group_plugin = new CouponGroupPlugin();

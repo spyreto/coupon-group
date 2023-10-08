@@ -346,12 +346,13 @@ function notify_user_about_coupon($user_id, $group_id)
 {
   $user_info = get_userdata($user_id);
   $group_name = get_post($group_id)->post_title;
+  $site_name = "Your Site Name";
 
   $to = $user_info->user_email;
-  $subject = 'You have been added to a coupon group!';
-  $message = "Hello {$user_info->display_name},\n\n";
-  $message .= "The {$group_name} offer package has been added to your account. Use it on your next purchase!\n\n";
-  $message .= "Best regards,\nYour Site Name";
+  $subject = __('You have been added to a coupon group!', 'coupon-group');
+  $message = __("Hello" . $user_info->display_name . ",\n\n", 'coupon-group');
+  $message = __("The " . $group_name . "offer package has been added to your account. Use it on your next purchase!\n\n", 'coupon-group');
+  $message = __("Best regards,\n . $site_name", 'coupon-group');
 
   wp_mail($to, $subject, $message);
 }
@@ -374,7 +375,7 @@ function custom_coupon_message($message, $msg_code, $coupon)
   if ($msg_code === WC_Coupon::WC_COUPON_SUCCESS && is_coupon_part_of_group($coupon->get_id())) {
     $coupon_code = $coupon->get_code();
     // Return your custom message for applied coupons
-    return __('You are member of a coupon group, coupon ' . $coupon_code . ' has been applied!');
+    return __('You are member of a coupon group, coupon ' . $coupon_code . ' has been applied!, coupon-group');
   }
 
   // For non-grouped coupons, return the default message
