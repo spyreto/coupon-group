@@ -12,6 +12,8 @@ Coupon Group is a WordPress plugin aimed at enhancing WooCommerce by introducing
 - **Create - Edit Coupon Group:** Create or update a coupon group. You can add WC coupons, customers, expiry date and also you can add some extra options like "Same day delivery".
 - **Create - Edit Options:** Add custom options which are displayed to the user and may refer to some extra benefits.
 - **Daily Checks:** Automatic deactivation of expired groups.
+- **Unlimited Use option:** Customers can use the coupons as many times they want until the expiration date (if set).
+- **Translatable:** Multilingual flexibility.
 - _More features are being developed._
 
 ## Installation

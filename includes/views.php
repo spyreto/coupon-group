@@ -214,7 +214,7 @@ function display_create_or_edit_group_page()
 
                         <!-- Is Active -->
                         <div class="admin-cg-form-checkbox">
-                            <label for="is_active"><?php echo esc_html__('Is active:', 'coupon-group'); ?></label>
+                            <label for="is_active"><?php echo esc_html__('Is Active:', 'coupon-group'); ?></label>
                             <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : checked($old_coupon_group->is_active, 1) ?> />
                             <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to activate the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                         </div>
@@ -307,7 +307,7 @@ function display_create_or_edit_group_page()
 
                     <!-- Is Active -->
                     <div class="admin-cg-form-checkbox">
-                        <label for="is_active"><?php echo esc_html__('Is active:', 'coupon-group'); ?></label>
+                        <label for="is_active"><?php echo esc_html__('Is Active:', 'coupon-group'); ?></label>
                         <input type="checkbox" id="is_active" name="is_active" value="1" <?php isset($form_data['is_active']) ? checked($form_data['is_active'], 1) : ""; ?> />
                         <span class="admin-cg-input-info"><?php echo esc_html__('Check this box to activate the Coupon Group until the expiration date (if set).', 'coupon-group'); ?></span>
                     </div>
