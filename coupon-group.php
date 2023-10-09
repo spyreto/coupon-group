@@ -3,7 +3,7 @@
 /*
 Plugin Name: Coupon Group
 Description: The Coupon Group plugin extends the functionality of your WooCommerce store by allowing you to create and manage custom coupon groups with unique offers and membership options.
-Version: 1.0
+Version: 1.0.0-beta1
 Author: Spiros Dimou
 Auhtor URI: https://www.linkedin.com/in/spiridon-dimou
 */

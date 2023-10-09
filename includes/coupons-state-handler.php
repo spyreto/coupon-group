@@ -346,7 +346,7 @@ function notify_user_about_coupon($user_id, $group_id)
 {
   $user_info = get_userdata($user_id);
   $group_name = get_post($group_id)->post_title;
-  $site_name = "Your Site Name";
+  $site_name = get_bloginfo('name');
 
   $to = $user_info->user_email;
   $subject = __('You have been added to a coupon group!', 'coupon-group');
