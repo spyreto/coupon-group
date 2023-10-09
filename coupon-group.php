@@ -126,8 +126,8 @@ class CouponGroupPlugin
         //Create coupon option submenu
         add_submenu_page(
             'coupon-group',           // Parent slug
-            'New Coupon Option',               // Page title
-            __('New Coupon Option', 'coupon-group'),   // Menu title
+            'New Option',               // Page title
+            __('New Option', 'coupon-group'),   // Menu title
             'manage_woocommerce',             // Capability
             'create-coupon-option',                // Menu slug
             'display_create_or_edit_coupon_option_page'  // Callback function

@@ -18,7 +18,6 @@ The Coupon Group plugin extends the functionality of your WooCommerce store by a
 Assign Customers to Groups: Easily add registered customers to specific coupon groups, granting them access to exclusive deals and benefits.
 * View Group Details: Gain insights into each coupon group's membership and usage statistics directly from the WordPress admin dashboard.
 * Display Group Information: Showcase coupon group details on the WooCommerce order details page to inform administrators and customers about the benefits and perks associated with their membership.
-
 * Coupon Group Integration simplifies the management of coupon promotions, enhances user experience, and helps you maximize the potential of your WooCommerce store.
 
 Installation
@@ -29,7 +28,7 @@ Installation
 Frequently Asked Questions
 --------------------------
 1. How do I create a new Coupon Group ?
-   - Go to the 'Coupon Group' menu in your WordPress admin, and you'll find the New Group' page.
+   - Go to the 'Coupon Group' menu in your WordPress admin, and you'll find the 'New Group' page.
 
 Screenshots
 -----------
