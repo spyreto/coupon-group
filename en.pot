@@ -1,0 +1,106 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Coupo Group\n"
+"POT-Creation-Date: 2023-10-09 19:56+0300\n"
+"PO-Revision-Date: 2023-10-09 19:56+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: coupon-group.php:85
+msgid "Coupon Group"
+msgstr ""
+
+#: coupon-group.php:98
+msgid "Overview"
+msgstr ""
+
+#: coupon-group.php:108
+msgid "New Group"
+msgstr ""
+
+#: coupon-group.php:130
+msgid "New Coupon Option"
+msgstr ""
+
+#: includes/coupons-state-handler.php:352
+msgid "You have been added to a coupon group!"
+msgstr ""
+
+#: includes/coupons-state-handler.php:353
+msgid "Hello"
+msgstr ""
+
+#: includes/coupons-state-handler.php:354
+msgid "The "
+msgstr ""
+
+#: includes/coupons-state-handler.php:378
+msgid "You are member of a coupon group, coupon "
+msgstr ""
+
+#: includes/coupons-state-handler.php:454
+msgid "You must be logged in to use this coupon."
+msgstr ""
+
+#: includes/coupons-state-handler.php:468
+msgid "You must be member of a Coupon Group to use this coupon."
+msgstr ""
+
+#: includes/form-handler.php:35
+msgid "The \"Coupon Group Name\" field is required. Please enter a value."
+msgstr ""
+
+#: includes/form-handler.php:124
+msgid "The \"Coupon Title\" field is required. Please enter a value."
+msgstr ""
+
+#: includes/helper-functions.php:12
+msgid "Fixed cart discount"
+msgstr ""
+
+#: includes/helper-functions.php:13
+msgid "Percentage discount"
+msgstr ""
+
+#: includes/helper-functions.php:14
+msgid "Fixed product discount"
+msgstr ""
+
+#: includes/helper-functions.php:15
+msgid "Percentage product discount"
+msgstr ""
+
+#: includes/helper-functions.php:18
+msgid "Unknown discount type"
+msgstr ""
+
+#: includes/helper-functions.php:34 includes/helper-functions.php:41
+msgid ""
+"The expiry date you entered is invalid. Please enter a valid future date."
+msgstr ""
+
+#: includes/helper-functions.php:49
+msgid ""
+"The expiry date you entered is invalid or in the past. Please enter a valid "
+"future date."
+msgstr ""
+
+#: includes/views.php:256 includes/views.php:412
+msgid "Update"
+msgstr ""
+
+#: includes/views.php:351
+msgid "Save Changes"
+msgstr ""
+
+#: includes/views.php:438
+msgid "Save Option"
+msgstr ""
