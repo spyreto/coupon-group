@@ -1,6 +1,6 @@
 === Coupon Group ===
 Contributors: Spiros Dimou
-- [![Spiros Dimou](https://media.licdn.com/dms/image/C4E03AQHkh4not3eeqg/profile-displayphoto-shrink_800_800/0/1655919860955?e=1702512000&v=beta&t=7tUPa0mMvo4yQd7s6rUGE3SqlhRAjeoGCVyDFSyuTv0)](https://www.linkedin.com/in/spiridon-dimou/)
+- [Spiros Dimou](https://www.linkedin.com/in/spiridon-dimou/)
 Tags: coupon group, woocommerce coupons, group coupons, woocommerce, shop
 Requires at least: 6.0
 Tested up to: 6.2
