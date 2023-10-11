@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", function (event) {
     // Check if the clicked target is the modal itself
     if (
+      confirmationBox &&
       !confirmationBox.contains(event.target) &&
       !event.target.classList.contains("admin-cg-delete-link")
     ) {
