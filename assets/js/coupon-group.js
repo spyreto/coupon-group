@@ -34,23 +34,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  document.addEventListener("click", function (event) {
+    // Check if the clicked target is the modal itself
+    if (
+      !confirmationBox.contains(event.target) &&
+      !event.target.classList.contains("admin-cg-delete-link")
+    ) {
+      overlay.style.display = "none";
+      confirmationBox.style.display = "none";
+    }
+  });
+
   // Handle delete confirmation box
   if (couponGroupDeleteLinks.length !== 0) {
     for (let i = 0; i < couponGroupDeleteLinks.length; i++) {
       couponGroupDeleteLinks[i].addEventListener("click", function (event) {
         // Prevent the default action of the link (navigation) from occurring
         event.preventDefault();
-
-        document.addEventListener("click", function (event) {
-          // Check if the clicked target is the modal itself
-          if (
-            !confirmationBox.contains(event.target) &&
-            !couponGroupDeleteLinks[i].contains(event.target)
-          ) {
-            overlay.style.display = "none";
-            confirmationBox.style.display = "none";
-          }
-        });
 
         const deleteLink = event.currentTarget.href;
 
