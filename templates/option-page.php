@@ -85,4 +85,5 @@ function display_create_or_edit_coupon_option_page()
         </div>
 <?php
     }
+    display_footer();
 }

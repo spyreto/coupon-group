@@ -280,4 +280,5 @@ function display_create_or_edit_group_page()
 <?php
 
     }
+    display_footer();
 }

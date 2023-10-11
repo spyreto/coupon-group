@@ -24,12 +24,6 @@ Large: 1.8
 -0.5px
 0.75px 
 
-- Colors
-Font color: #1d2327
-Main color: #b197fc
-Main color tint: #d0bfff
-Main color shade: #9775fa
-Background color: #f8f9fa
 */
 
 @keyframes fadeIn {
@@ -317,4 +311,17 @@ button.admin-cg-button-danger:hover {
   background-color: rgba(0, 0, 0, 0.2); /* Black background with 50% opacity */
   display: none; /* Initially hidden */
   z-index: 5; /* Ensure the overlay is above other elements */
+}
+
+.admin-cg-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2em;
+  width: 100%;
+}
+
+.admin-cg-footer a {
+  cursor: pointer;
+  text-decoration: none;
 }

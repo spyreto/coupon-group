@@ -51,12 +51,13 @@ function overview_page()
         <h1><?php echo esc_html__('Coupon Group', 'coupon-group'); ?></h1>
         <h2><?php echo esc_html__('Welcome to the Coupon Group plugin management page. Use the tools below to view and manage coupon groups and group otpions.', 'coupon-group'); ?></h2>
         <?php
-        'display_delete_confirmation_box'();
-        'display_coupon_groups'();
-        'display_coupon_options'();
+        display_delete_confirmation_box();
+        display_coupon_groups();
+        display_coupon_options();
         ?>
     </div>
 <?php
+    display_footer();
 }
 
 
