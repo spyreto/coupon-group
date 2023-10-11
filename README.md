@@ -94,7 +94,7 @@ Please visit our [GitHub repository](https://github.com/spyreto/coupon-group/iss
 
 ## Changelog
 
-### Version 1.0.0
+### Version 1.0.0-beta2
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
