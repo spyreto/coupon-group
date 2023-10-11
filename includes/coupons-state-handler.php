@@ -395,20 +395,17 @@ function display_coupon_group_options()
   $user_id = get_current_user_id();
   $coupon_groups = get_active_coupon_groups_for_user($user_id);
 
-
-  foreach ($coupon_groups as $coupon_group) {
-    $used_by = get_post_meta($coupon_group->ID, '_used_by', true);
-    $unlimited_use = get_post_meta($coupon_group->ID, '_unlimited_use', true);
-  }
+  // Get the available options
   $available_options = get_option('custom_coupon_options', array());
 
   // Check if there are any coupon groups
   foreach ($coupon_groups as $coupon_group) {
     $group_options = get_post_meta($coupon_group->ID, '_custom_coupon_options', true);
 
+    // 
     foreach ($available_options as $available_option) {
       // Each $option is an associative array with 'id' and 'value' keys.
-      if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == 1) {
+      if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == '1') {
 ?>
         <tr>
           <th><?php echo $available_option['title'] ?></th>

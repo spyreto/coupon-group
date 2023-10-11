@@ -175,7 +175,7 @@ function get_active_coupon_groups_for_user($user_id)
             'relation' => 'AND',
             array(
                 'key'     => '_customers',
-                'value'   => sprintf(':"%s";',  $user_id), // Searching for serialized array.
+                'value'   => '"' . $user_id . '"', // Searching for serialized array.
                 'compare' => 'LIKE'
             ),
             array(
@@ -190,18 +190,23 @@ function get_active_coupon_groups_for_user($user_id)
                     'compare' => 'LIKE'  // Check if _unlimited_use is set to 1
                 ),
                 array(
-                    'relation' => 'AND',
-                    array(
-                        'key'     => '_unlimited_use',
-                        'value'   => '1',
-                        'compare' => 'NOT LIKE'  // Check if _unlimited_use is set to 1
-                    ),
-                    array(
-                        'key'     => '_used_by',
-                        'value'   => sprintf(':"%s";',  $user_id),  // Searching for serialized array.
-                        'compare' => 'NOT LIKE',
-                    )
+                    'key'     => '_used_by',
+                    'value'   => '"' . $user_id . '"',  // Searching for serialized array.
+                    'compare' => 'NOT LIKE',
                 )
+                // array(
+                //     'relation' => 'AND',
+                //     array(
+                //         'key'     => '_unlimited_use',
+                //         'value'   => '1',
+                //         'compare' => 'NOT LIKE'  // Check if _unlimited_use is set to 1
+                //     ),
+                //     array(
+                //         'key'     => '_used_by',
+                //         'value'   => sprintf(':"%s";',  $user_id),  // Searching for serialized array.
+                //         'compare' => 'NOT LIKE',
+                //     )
+                // )
             )
         )
     );
