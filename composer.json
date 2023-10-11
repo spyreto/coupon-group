@@ -1,0 +1,23 @@
+{
+  "name": "spyreto/coupon-group",
+  "type": "wordpress-plugin",
+  "description": "The Coupon Group plugin extends the functionality of your WooCommerce store by allowing you to create and manage custom coupon groups with unique offers and membership options",
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "coupon",
+    "ecommerce",
+    "woocommerce",
+    "membership",
+    "discount",
+    "group"
+  ],
+  "homepage": "https://github.com/spyreto/coupon-group",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Spiros Dimou",
+      "email": "spirosdimou22@gmail.com"
+    }
+  ]
+}
