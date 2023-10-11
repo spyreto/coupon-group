@@ -26,9 +26,12 @@ require_once plugin_dir_path(__FILE__) . 'includes/form-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/helper-functions.php';
 require_once plugin_dir_path(__FILE__) . 'includes/coupons-state-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/cron-tasks.php';
-require_once plugin_dir_path(__FILE__) . 'includes/views.php';
+require_once plugin_dir_path(__FILE__) . 'templates/overview-page.php';
+require_once plugin_dir_path(__FILE__) . 'templates/group-page.php';
+require_once plugin_dir_path(__FILE__) . 'templates/option-page.php';
+require_once plugin_dir_path(__FILE__) . 'templates/shared.php';
+require_once plugin_dir_path(__FILE__) . 'templates/footer.php';
 
-include_once plugin_dir_path(__FILE__) . 'includes/order-page-view.php';
 
 // Plugin pages ids
 define('COUPON_GROUP_PAGES', array(
