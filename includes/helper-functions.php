@@ -192,8 +192,8 @@ function get_active_coupon_groups_for_user($user_id)
                 ),
                 array(
                     'key'     => '_used_by',
-                    'value'   => $user_id,  // Searching for serialized array.
-                    'compare' => 'NOT EXISTS',
+                    'value'   => sprintf(':%s;',  $user_id),
+                    'compare' => 'NOT LIKE',
                 )
             )
         )

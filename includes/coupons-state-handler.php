@@ -412,7 +412,7 @@ function display_coupon_group_options()
           <th><?php echo $available_option['title'] ?></th>
           <td><?php echo $available_option['description'] ?></td>
         </tr>
-<?php
+      <?php
       }
     }
   }
@@ -421,8 +421,39 @@ function display_coupon_group_options()
 add_action('woocommerce_cart_totals_before_shipping', 'display_coupon_group_options');
 add_action('woocommerce_review_order_before_shipping', 'display_coupon_group_options');
 
+/**
+ * Display coupon group perks information after the shipping line item on the Order details screen.
+ * 
+ * @param int $order_id The order ID.
+ */
+function display_coupon_group_options_in_order_details($order)
+{
+  // Access order data
+  $order_id = $order->get_id();
+  $associated_coupon_groups = get_post_meta($order_id, '_coupon_groups', true);
+
+  // Get the available options
+  $available_options = get_option('custom_coupon_options', array());
+  // Check if there are any coupon groups
+  foreach ($associated_coupon_groups as $coupon_group) {
+    $group_options = get_post_meta($coupon_group, '_custom_coupon_options', true);
+
+
+    foreach ($available_options as $available_option) {
+      // Each $option is an associative array with 'id' and 'value' keys.
+      if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == '1') {
+      ?>
+        <tr>
+          <th><?php echo $available_option['title'] ?></th>
+          <td><?php echo $available_option['description'] ?></td>
+        </tr>
+<?php
+      }
+    }
+  }
+}
 // Display the coupon group options in the order details page
-add_action('woocommerce_order_details_after_order_table_items', 'display_coupon_group_options');
+add_action('woocommerce_order_details_after_order_table_items', 'display_coupon_group_options_in_order_details');
 
 
 /**
@@ -441,6 +472,7 @@ function validate_coupon_for_user_group($is_valid, $coupon)
   }
   $coupon_id = $coupon->get_id();
   $associated_coupon_groups = get_active_coupon_groups_for_coupon($coupon_id);
+
 
   if (empty($associated_coupon_groups)) {
     return $is_valid; // This coupon is not associated with any group, so it remains valid.
@@ -494,8 +526,12 @@ function reapply_coupons_on_unlimited_use($order_id)
   // Get the active coupon groups for the user
   $active_user_groups =  get_active_coupon_groups_for_user($user_id);
 
+  $active_groups_ids = array();
+
   // Check if there are any active coupon groups
   foreach ($active_user_groups as $active_group) {
+    $active_groups_ids[] = $active_group->ID;
+
     $unlimited_use = get_post_meta($active_group->ID, "_unlimited_use", true) == '1';
     update_coupon_group_user_usage($active_group->ID, $user_id);
     // Check if the coupon group is unlimited use
@@ -511,6 +547,7 @@ function reapply_coupons_on_unlimited_use($order_id)
       }
     }
   }
+  update_post_meta($order_id, '_coupon_groups', $active_groups_ids);
 }
 add_action('woocommerce_thankyou', 'reapply_coupons_on_unlimited_use', 10, 1);
 
