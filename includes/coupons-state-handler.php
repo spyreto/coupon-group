@@ -181,6 +181,7 @@ function check_flagged_coupons()
   $cart->calculate_totals();
 }
 add_action('wp_loaded', 'check_flagged_coupons');
+add_action('wp_login', 'check_flagged_coupons', 10);
 
 
 // Temporary storage for the old coupon group values
@@ -402,7 +403,7 @@ function display_coupon_group_options()
   foreach ($coupon_groups as $coupon_group) {
     $group_options = get_post_meta($coupon_group->ID, '_custom_coupon_options', true);
 
-    // 
+
     foreach ($available_options as $available_option) {
       // Each $option is an associative array with 'id' and 'value' keys.
       if (isset($group_options[$available_option['id']]) && $group_options[$available_option['id']] == '1') {
