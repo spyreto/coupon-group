@@ -31,6 +31,7 @@ require_once plugin_dir_path(__FILE__) . 'templates/group-page.php';
 require_once plugin_dir_path(__FILE__) . 'templates/option-page.php';
 require_once plugin_dir_path(__FILE__) . 'templates/shared.php';
 require_once plugin_dir_path(__FILE__) . 'templates/footer.php';
+require_once plugin_dir_path(__FILE__) . 'templates/order-page-view.php';
 
 
 // Plugin pages ids

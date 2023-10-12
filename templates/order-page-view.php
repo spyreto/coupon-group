@@ -12,16 +12,16 @@ function display_coupon_group_options_after_shipping($order_id)
   $order = wc_get_order($order_id);
 
   if ($order) {
-    // Get the user ID from the order
-    $user_id = $order->get_user_id();
 
-    // Get the user group from user meta
-    $coupon_groups = get_active_coupon_groups_for_user($user_id);
+    // Get the coupon groups from order meta
+    $associated_coupon_groups = get_post_meta($order_id, '_coupon_groups', true);
+
     $available_options = get_option('custom_coupon_options', array());
 
-    foreach ($coupon_groups as $coupon_group) {
+    foreach ($associated_coupon_groups as $associated_coupon_group_id) {
+      $coupon_group = get_post($associated_coupon_group_id);
 ?>
-      <a class='group-name-order-page' href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $coupon_group->ID) ?>"> Member of <?php echo get_the_title($coupon_group) ?> Coupon Group </a>
+      <a class='group-name-order-page' href="<?php echo admin_url('admin.php?page=edit-coupon-group&group_id=' . $associated_coupon_group_id) ?>"> Member of <?php echo get_the_title($coupon_group) ?> Coupon Group </a>
       <?php
       $group_options = get_post_meta($coupon_group->ID, '_custom_coupon_options', true);
       foreach ($available_options as $available_option) {
