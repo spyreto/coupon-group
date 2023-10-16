@@ -191,6 +191,10 @@ function get_active_coupon_groups_for_user($user_id)
                     'compare' => 'LIKE'  // Check if _unlimited_use is set to 1
                 ),
                 array(
+                    'key' => '_used_by',
+                    'compare' => 'NOT EXISTS',
+                ),
+                array(
                     'key'     => '_used_by',
                     'value'   => sprintf(':%s;',  $user_id),
                     'compare' => 'NOT LIKE',
